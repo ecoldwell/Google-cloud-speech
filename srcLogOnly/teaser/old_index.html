@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Grid Demo</title>
+  <script src="https://aframe.io/releases/0.7.1/aframe.min.js"></script>
+  <script src="https://unpkg.com/aframe-animation-component@^4.1.2/dist/aframe-animation-component.min.js"></script> 
+  <script
+    src="https://rawgit.com/mayognaise/aframe-mouse-cursor-component/master/dist/aframe-mouse-cursor-component.min.js"></script>
+  <script src="dist/player-skin.js"></script>
+  <script src="dist/player.full.js"></script>
+  <script src>"js/AVideoPlayer.js"</script>
+  <script src="/arrow-key-rotation.js"></script>
+  <script src="/play-on-window-click.js"></script>
+  <script src="/play-on-vrdisplayactivate-or-enter-vr.js"></script>
+  <script src="/hide-once-playing.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/animejs/2.0.2/anime.min.js"></script>
+  <script>
+    var videoLink = "http://nomadsstagmediaservices-caea.streaming.media.azure.net/5dd1bc88-99e4-4b75-b41f-144b18df6eed/Light_Teaser_Final_v002_5k.ism/manifest(format=mpd-time-csf)"
+    var videoType = "application/dash+xml"
+  </script>
+  <style type="text/css">
+    #video-permission {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: white;
+      z-index: 10000;
+      display: none;
+    }
+    #video-permission-button {
+      position: fixed;
+      top: calc(50% - 1em);
+      left: calc(50% - 60px);
+      width: 120px;
+      height: 2em;
+    }
+    html {
+      height: 100%;
+      width: 100%;
+      padding: 0;
+      margin: 0;
+    }
+    body {
+      height: 100%;
+      width: 100%;
+      padding: 0;
+      margin: 0;
+      overflow: hidden;
+    }
+    object {
+      height: 100%;
+      width: 100%
+    }
+    #video {
+      width: 100%;
+      height: 100%
+    }
+    .video-wrapper {
+      display: block !important;
+    }
+
+    #playPlane,
+    #backPlane {
+      visibility:hidden;
+      opacity:0;
+      transition: 7s ease all;
+    }
+
+    #playPlane:hover,
+    #backPlane:hover {
+      visibility:visible;
+      opacity:1;
+    }
+
+    .transition {
+      transition: visibility 0s linear 300ms, opacity 300ms !important;
+    }
+  </style>
+</head>
+<body>
+  <!-- Use components defined in separate files. -->
+  <script>
+
+    AFRAME.registerComponent('play-on-focus', {
+      schema: {
+        color: { default: 'red' }
+      },
+      init: function () {
+        let vid = document.getElementById('video');
+        // var vid = videojs('video');
+        let data = this.data;
+        let el = this.el;
+        let playBtn = document.getElementById('playBtn');
+        // el.addEventListener('mouseenter', function () {
+        //   // el.setAttribute('color', data.color);
+        //   console.log('Enter');
+        //   vid.pause();
+        // });
+        // el.addEventListener('mouseleave', function () {
+        //   // el.setAttribute('color', defaultColor);
+        //   console.log('Leave');
+        //   vid.play();
+        // });
+        el.addEventListener('click', () => {
+          if (vid.paused) {
+            console.log("Video played");
+            vid.play();
+            playBtn.setAttribute('src', 'assets/pause.png');
+            
+          } else {
+            console.log("Video paused");
+            vid.pause();
+            playBtn.setAttribute('src', 'assets/play.png');
+          }
+        });
+      }
+    });
+    AFRAME.registerComponent('controls-appear', {
+      init: function () {
+        let el = this.el;
+        let data = this.data;
+        let playBtn = document.getElementById('playBtn');
+        let backBtn = document.getElementById('backBtn');
+        let playPlane = document.getElementById('playPlane');
+        let backPlane = document.getElementById('backPlane');
+        let cursor = document.getElementById('cursorToggle')
+        el.addEventListener('mouseenter', function () {
+          console.log('Enter');
+          playBtn.setAttribute('material', 'opacity: 1.0');
+          backBtn.setAttribute('material', 'opacity: 1.0');
+          playPlane.setAttribute('visible', 'true');
+          backPlane.setAttribute('visible', 'true');
+          cursor.setAttribute('visible', 'true')
+          // button.setAttribute('visible', 'true');
+          // curs.setAttribute('visible', 'true');
+        });
+        el.addEventListener('mouseleave', function () {
+          console.log('Leave');
+          playBtn.setAttribute('material', 'opacity: 0.0');
+          backBtn.setAttribute('material', 'opacity: 0.0');
+          playPlane.setAttribute('visible', 'false');
+          backPlane.setAttribute('visible', 'false');
+          cursor.setAttribute('visible', 'false');
+          // playPlane.setAttribute('material', 'opacity: 0.0');
+          // button.setAttribute('visible', 'false');
+          // curs.setAttribute('visible', 'false');
+        });
+      }
+    })
+    AFRAME.registerComponent('go-back', {
+      init: function () {
+        let el = this.el;
+        let data = this.data;
+        el.addEventListener('click', function () {
+          console.log('Back');
+          var test = document.querySelector('a-scene');
+          test.exitVR();
+          // var times = window.history.length;
+          // window.history.back(times);
+          // var host = window.location.host;
+          window.location.href ='https://bself.life';
+          // button.setAttribute('visible', 'true');
+          // curs.setAttribute('visible', 'true');
+        });
+      }
+    })
+    
+  </script>
+  <!-- Specify our scene. -->
+  <a-scene>
+
+    <a-assets>
+      <img src="assets/play.png" id="play" crossorigin="anonymous">
+      <img src="assets/pause.png" id="pause" crossorigin="anonymous">
+      <img src="assets/volume-normal.png" id="volume-normal" crossorigin="anonymous">
+      <img src="assets/volume-mute.png" id="volume-mute" crossorigin="anonymous">
+      <img src="assets/seek-back.png" id="seek-back" crossorigin="anonymous">
+    </a-assets>
+    <!-- The original example also has this 180 degree rotation, to appear to be going forward. -->
+    <a-videosphere rotation="0 270 0" src="#video" play-on-vrdisplayactivate-or-enter-vr>
+    </a-videosphere>
+    <!-- Define camera with zero user height, movement disabled and arrow key rotation added. -->
+
+    <!-- Wait for the video to load. -->
+    <a-assets class="video-wrapper">
+      <!-- Single source video. -->
+      <video id="video" class="video-js vjs-default-skin" autoplay muted preload="auto" crossOrigin="anonymous"
+        width="100%" height="100%" controls playsinline webkit-playsinline>
+        <source
+          src="http://nomadsstagmediaservices-caea.streaming.media.azure.net/9a3c85a7-36f3-4631-9d31-9964fb588aee/Finale_Teaser_v007_VolBot_b_03_2.ism/manifest(format=m3u8-aapl-v3)"
+          type="application/x-mpegURL">
+        <source
+          src="http://nomadsstagmediaservices-caea.streaming.media.azure.net/9a3c85a7-36f3-4631-9d31-9964fb588aee/Finale_Teaser_v007_VolBot_b_03_2.ism/manifest(format=m3u8-aapl-v3)"
+          type="application/x-mpegURL">
+        <source
+          src="http://nomadsstagmediaservices-caea.streaming.media.azure.net/9a3c85a7-36f3-4631-9d31-9964fb588aee/Finale_Teaser_v007_VolBot_b_03_2.ism/manifest(format=mpd-time-csf)"
+          type="application/dash+xml">
+      </video>
+    </a-assets>
+    <!-- <a-box id="control-box" play-on-focus position="-1 0.5 -3" rotation="0 45 0" color="#4CC3D9"></a-box> -->
+
+    <a-plane id = "playPlane" height="2" width="2" rotation="-30 0 0" position="1 -2 -5" controls-appear class="clickable" material="opacity:0" color = "#000"
+    animation__fadein="property: material.opacity; dur: 2000;
+    easing: linear; from 1; to: 0; startEvents: fadein"
+animation__fadeout="property: material.opacity; dur: 2000;
+    easing: linear; from 1; to: 0; startEvents: fadeout">
+       
+      <a-image id="playBtn" src="assets/pause.png" visible="true" scale="2 2 2"  transpanrent= "true" material="opacity: 0.0" play-on-focus>
+        
+      </a-image>
+  
+     
+    </a-plane>
+ 
+    <a-plane id = "backPlane" color="#000" height="2" width="2" material="opacity: 0.0" rotation="-30 0 0" position="-1.5 -2 -5" controls-appear class="clickable"
+    animation__fadein="property: material.opacity; dur: 2000;
+    easing: linear; from 0; to: 1; startEvents: fadein"
+animation__fadeout="property: material.opacity; dur: 2000;
+    easing: linear; from 1; to: 0; startEvents: fadeout">
+     
+      <a-image id="backBtn" src="assets/seek-back.png" visible="true" scale="2 2 2" material="opacity: 0.0" go-back></a-image>
+    </a-plane>
+    <a-mixin id="sphere" geometry="primitive: sphere"></a-mixin>
+    <a-entity position="0 2.2 4">
+        <a-entity camera look-controls wasd-controls mouse-cursor >
+          <a-entity position="0 0 -3"
+                    geometry="primitive: ring; radiusOuter: 0.30;
+                              radiusInner: 0.20;"
+                    material="color: cyan; shader: flat"
+                    cursor="maxDistance: 30; fuse: true"
+                    scale = "0.1 0.1 0.1"
+                    visible = "false" 
+                    id = "cursorToggle">
+            <a-animation begin="click" easing="ease-in" attribute="scale"
+                 fill="backwards" from="0.1 0.1 0.1" to="1 1 1" dur="150"></a-animation>
+            <a-animation begin="fusing" easing="ease-in" attribute="scale"
+                 fill="forwards" from="1 1 1" to="0.1 0.1 0.1" dur="1500"></a-animation>
+          </a-entity>
+        </a-entity>
+      </a-entity>
+      
+      <!-- <a-entity geometry="primitive: box" material="color: black"
+      animation__color="property: material.color; dir: alternate; dur: 1000;
+                        easing: easeInSine; loop: true; to: #FFF">
+</a-entity>
+
+<a-entity geometry="primitive: box" material="color: orange"
+      animation__fadein="property: material.opacity; dur: 100;
+                          easing: linear; from 0; to: 1; startEvents: fadein"
+      animation__fadeout="property: material.opacity; dur: 100;
+                          easing: linear; from 1; to: 0; startEvents: fadeout">
+</a-entity>
+
+<a-cylinder color="#F55" radius="0.1"
+        animation="property: color; dir: alternate; dur: 1000;
+                   easing: easeInSine; loop: true; to: #5F5"
+        animation__scale="property: scale; dir: alternate; dur: 200;
+                   easing: easeInSine; loop: true; to: 1.2 1 1.2"
+        animation__yoyo="property: position; dir: alternate; dur: 1000;
+                         easing: easeInSine; loop: true; to: 0 2 0">
+</a-cylinder> -->
+      <!-- <a-curvedimage src="assets/play.png" play-on-focus></a-image> -->
+      <!-- <a-image id="button" src="assets/pause.png" visible="false" play-on-focus></a-image> -->
+    <!-- <a-entity id="menu" geometry="primitive: sphere; thetaLength: 20; phiLength: 360 radius:0.5" color="#A0A0A0"
+      scale="0.5 0.5 0.5" visible="false" play-on-focus>
+    </a-entity> -->
+  </a-scene>
+  <!-- Show a button to switch to the multi-source example that shows detail. -->
+  <button onClick="window.location.href='multi-source-detail.html'" style="display:none">
+    Switch to multi-source detail example
+  </button>
+  <script>
+    if ('SamsungChangeSky' in window) {
+      window.SamsungChangeSky({ sphere: 'samples/milford-sound.jpg' });
+    }
+  </script>
+  <script src="js/AVideoPlayer.js"></script>
+  <script type="text/javascript">
+  //   let scene = document.querySelector('a-scene');
+  //   let button = document.querySelector('a-plane');
+  
+  //  cursor.removeAttribute('animation__cursorHideLeave');
+  //       cursor.setAttribute('animation__cursorHideEnter', "property: scale; from: 0.6 0.6 0.6; to: 0 0 0; dur: 300; easing: easeInQuad;");
+  //     }
+  //     let showCursor = function() {
+  //       cursor.removeAttribute('animation__cursorHideEnter');
+  //       cursor.setAttribute('animation__cursorHideLeave', "property: scale; from: 0 0 0; to: 0.6 0.6 0.6; dur: 300; easing: easeInQuad;");
+  //     }
+  //     document.querySelector('#video-screen').addEventListener('mouseenter', hideCursor);
+  //     document.querySelector('#video-screen').addEventListener('mouseleave', showCursor);
+
+//   var buttonEl = document.querySelector('a-plane');
+
+// function animateButton(visibility, opacity, duration, elasticity) {
+//   anime.remove(buttonEl);
+//   anime({
+//     targets: buttonEl,
+//     scale: scale,
+//     duration: duration,
+//     elasticity: elasticity
+//   });
+// }
+
+// function enterButton() { animateButton(1.2, 800, 400) };
+// function leaveButton() { animateButton(1.0, 600, 300) };
+
+// buttonEl.addEventListener('mouseenter', enterButton, false);
+// buttonEl.addEventListener('mouseleave', leaveButton, false);
+
+let scene = document.querySelector('a-scene');
+      var cursor = document.querySelector('a-cursor');
+
+let hideCursor = function() {
+        cursor.removeAttribute('animation__cursorHideLeave');
+        cursor.setAttribute('animation__cursorHideEnter', "property: scale; from: 0.6 0.6 0.6; to: 0 0 0; dur: 300; easing: easeInQuad;");
+      }
+      let showCursor = function() {
+        cursor.removeAttribute('animation__cursorHideEnter');
+        cursor.setAttribute('animation__cursorHideLeave', "property: scale; from: 0 0 0; to: 0.6 0.6 0.6; dur: 300; easing: easeInQuad;");
+      }
+      document.querySelector('#video').addEventListener('mouseenter', hideCursor);
+      document.querySelector('#video').addEventListener('mouseleave', showCursor);
+
+
+  </script>
+</body>
+</html>

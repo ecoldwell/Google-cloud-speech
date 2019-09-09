@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta>
+  <script src="https://github.com/aframevr/aframe/blob/master/dist/aframe-master.min.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/gh/aframevr/aframe@1f55d4854fcdb64aad300aac04e6dd64693a48ad/dist/aframe-master.min.js"></script>
+  <!-- <script src="https://unpkg.com/aframe-supercraft-loader/dist/aframe-supercraft-loader.min.js"></script> -->
+  <script src="https://unpkg.com/aframe-environment-component/dist/aframe-environment-component.min.js"></script>
+  <script src="https://unpkg.com/aframe-orbit-controls@1.0.0/dist/aframe-orbit-controls.min.js"></script>
+  <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/core.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/animejs/2.0.2/anime.min.js"></script>
+  <!-- <script src="dist/bottom-controls.js"></script> -->
+  <link rel="stylesheet" href="loadingmodule/loading-module.css">
+  <link href="https://vjs.zencdn.net/7.4.1/video-js.css" rel="stylesheet" />
+  <script src="https://vjs.zencdn.net/ie8/1.1.2/videojs-ie8.min.js"></script>
+  <script src="https://vjs.zencdn.net/7.4.1/video.js"></script>
+  <script src="views/teaser/dist/aframe-rounded-component.min.js"></script>
+  <script src="views/teaser/dist/artyom.window.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/annyang/2.6.0/annyang.min.js"></script>
+
+  <!-- <script src='./require.js'></script> -->
+  <!-- <script src="dist/AVideoPlayer.js"></script> -->
+  <!-- <script src="https://cdn.jsdelivr.net/gh/aframevr/aframe-inspector@master/dist/aframe-inspector.min.js"></script> -->
+  <script>
+    let userId = 0;
+    document.cookie.split('; ').forEach((el) => {
+      if (el.search(/userid/i) >= 0) {
+        userId = el.split('=')[1];
+      };
+    });
+    // console.log('userId is ', userId);
+    let videoHash = window.location.search.slice(1)
+    
+    function loadjscssfile(filename, filetype) {
+      if (filetype == "js") { //if filename is a external JavaScript file
+        var fileref = document.createElement('script')
+        fileref.setAttribute("type", "text/javascript")
+        fileref.setAttribute("src", filename)
+      }
+      else if (filetype == "css") { //if filename is an external CSS file
+        var fileref = document.createElement("link")
+        fileref.setAttribute("rel", "stylesheet")
+        fileref.setAttribute("type", "text/css")
+        fileref.setAttribute("href", filename)
+      }
+      if (typeof fileref != "undefined")
+        document.getElementsByTagName("head")[0].appendChild(fileref)
+    }
+    
+  </script>
+  
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+ 
+
+  <link rel="stylesheet" href="./src/css/index.css">
+  <!-- <script>
+    window.setInterval(() => {
+      fetch(OUR_URL.SERVER_HOST + "/api/videos/checkuservideohash/", {
+        method: "POST",
+        body: JSON.stringify({ hash: videoHash, userId: userId, accessToken: accessToken }),
+        mode: "cors",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }).then((response) => {
+        return response.json();
+      }).then((response) => {
+        console.log('this dang problem212312313', response.sources);
+        if (!response.sources) {
+          window.location.href = OUR_URL.LANDING_PAGE;
+        }
+      })
+    }, 30000)
+  </script> -->
+</head>
+
+<body>
+  <!-- <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-W48MX2X"
+      height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <script src="https://cdn.jsdelivr.net/npm/mobile-detect@1.4.3/mobile-detect.min.js"></script> -->
+  <!-- Use components defined in separate files. -->
+
+  <!-- CONSTANTS SHOULD BE DEFINED FIRST -->
+  <script type='text/javascript' src="./src/constants/generalConstants.js"></script>
+  <script type='text/javascript' src="./src/constants/url.js"></script>
+
+  
+  <script src='./src/globalVariables.js'></script>
+  
+  <script type='text/javascript' src="./src/functions/getDeviceType.js"></script>
+  <script type='text/javascript' src="./src/functions/AframeDOMManipulation.js"></script>
+  <script type='text/javascript' src="./dist/aframe-video-controls2.js"></script>
+  <script type='text/javascript' src='./dist/sha256.min.js'></script>
+  <script src='./src/functions/instructions.js'></script>
+  <script src='./src/aframeComponents/general.js'></script>
+  <script src='./src/functions/getVideo.js'></script>
+  <script src='./src/initializeApp.js'></script>
+  <script src='./src/functions/motionPermissions.js'></script>
+  <script src='./src/functions/language.js'></script>
+  <script src='./src/functions/general.js'></script>
+  <script src='./src/functions/hlsEventListeners.js'></script>
+  <!-- <script src='./src/functions/videoInfo.js'></script> -->
+<script src='./src/functions/videoInfo.js'></script>
+<script src='./src/functions/networkInfo.js'></script>
+<script src='./src/functions/connectionType.js'></script>
+<script src="./dist/socket.io.js"></script>
+<script src="./dist/client.js"></script>
+
+
+
+<!-- FOR NETWORK SPEED MODULE -->
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script> -->
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/tooltip.min.js"></script> -->
+<script src="./src/networkspeed/network.min.js"></script>
+<script src="./src/networkspeed/main.js"></script>
+<!-- FOR NETWORK SPEED MODULE -->
+
+
+<script src='./src/functions/getDownloadSpeed.js'></script>
+
+
+
+  <script>
+
+    appMounts()
+  
+  </script>
+
+  <script>
+
+    let i = 0;
+    let movingTimer = 0;
+    let notMovingTimer = 0;
+    let initialX = 0;
+    let initialY = 0;
+
+  </script>
+      <audio></audio>
+    <div class="wrapper">
+        <button id="startRecButton" type="button">Start</button>
+        <button id="stopRecButton" type="button"> Stop recording</button>
+    </div>
+
+  <a-scene loading-screen="dotsColor: cyan; backgroundColor: black" z-index:9999999999999999999999999999;>
+    <a-entity id="controls" visible="false" video-controls="src:#video; distance: 3; size:4;" material="color: white" scale='0.75 0.75 0.75'>
+      <a-rounded width="1" height="1" radius="0.05" color="white" opacity="0.3" position="-2.5 -3.3 -0.1" scale="5 2.25 1" class="clickable" intersect></a-rounded>
+      <a-text id='currentTime' position='-0.5 -2.2 0' value='' color="black"></a-text>
+      <a-text id='totalTime' position='-0.06 -2.2 0' value='' color="black"></a-text>
+
+      <!-- <a-plane id="control-plane" material="color: white; opacity:0.3;" position="0 -2.2 -0.1" scale="5 2.25 1"
+        class="clickable" intersect></a-plane> -->
+
+        <a-text value='asd' id="quality_value" color='black' position='1.5 -2.2 0'></a-text>
+    </a-entity>
+    <a-sphere id="activator-ring" position="0 0 0" radius="4" color="cyan" geometry="theta-start: 130; theta-length: 10"
+      transparency="false" material="side: back; opacity: 0.15" class="clickable" sphere-activate></a-sphere>
+
+    </a-sphere>
+    <a-ring id="play-ring" color="cyan" radius-inner="0.23" radius-outer="0.28" theta-length="0.05" scale='0.75 0.75 0.75'>
+    </a-ring>
+    <a-entity id="camera" camera look-controls mouse-cursor camera-reader>
+      <a-image id="the1" src="./assets/icons8-1st-100.png" position="0 0 -8" material="opacity: 0.0"></a-image>
+      <a-image id="the2" src="./assets/icons8-circled-2-100.png" position="0 0 -8" material="opacity: 0.0"></a-image>
+      <a-image id="the3" src="./assets/icons8-circled-3-100.png" position="0 0 -8" material="opacity: 0.0"></a-image>
+      <a-ring id="tl-ring" color="black" radius-inner="0.1" radius-outer="0.15" theta-length="0.05"
+        position="-0.15 0.15 -10"></a-ring>
+      <a-ring id="tr-ring" color="black" radius-inner="0.1" radius-outer="0.15" theta-length="0.05"
+        position="0.15 0.15 -10"></a-ring>
+      <a-ring id="bl-ring" color="black" radius-inner="0.1" radius-outer="0.15" theta-length="0.05"
+        position="-0.15 -0.15 -10"></a-ring>
+      <a-ring id="br-ring" color="black" radius-inner="0.1" radius-outer="0.15" theta-length="0.05"
+        position="0.15 -0.15 -10"></a-ring>
+      <!-- <a-entity id="dummy-controls" visible="true" video-controls="src:#video; distance: 5; size:4;"></a-entity> -->
+      <a-sphere id="sphere" transparent="true" material="opacity: 0.0" geometry="radius: 0.5" position="0 -2 -2">
+      </a-sphere>
+
+      <a-entity position="0 0 -2.1" geometry="primitive: ring; radiusOuter: 0.060;
+                      radiusInner: 0.050;" material="color: cyan; shader: flat" raycaster="objects: .clickable;"
+        cursor="maxDistance: 30; fuse: true; fuseTimeout: 1300" scale="0.5 0.5 0.5" visible="false" id="cursorToggle"
+        proxy-event__enter="event: mouseenter; to: a-plane; as: foo"
+        proxy-event__leave="event: mouseleave; to: a-plane; as: bar">
+      </a-entity>
+
+      <!-- <a-entity position="0 -1 -3" geometry="primitive: ring; radiusOuter: 0.2; radiusInner: 0.1;" material="color: green" id="boxy"></a-entity> -->
+    </a-entity>
+    <!-- <a-entity position="0 -2 -2" geometry="primitive: ring; radiusOuter: 0.3; radiusInner: 0.2;" material="color: cyan" id="box"></a-entity> -->
+    <a-assets id="assets" timeout="5000">
+      <video id="video" class="video-js vjs-default-skin" preload="auto" crossOrigin="anonymous" width="100%"
+        height="100%" controls playsinline webkit-playsinline allow="gyroscope accelerometer magnetometer">
+      </video>
+      <!-- <img id="logo" src="/assets/lolgo.png" /> -->
+      <img id='upArrow' src='assets/arrowUp.png'>
+      <!-- <svg id="logo" src="/assets/nomads_logo.svg"></svg> -->
+      
+    </a-assets>
+    <!-- <a-entity oculus-touch-controls="hand: left"></a-entity>
+    <a-entity oculus-touch-controls="hand: right"></a-entity> -->
+    <!-- <a-entity camera look-controls
+      orbit-controls="target: 0 1.6 -0.5; minDistance: 0.5; maxDistance: 180; initialPosition: 0 5 15">
+      <a-entity geometry="primitive:cone; radius-bottom:1; radius-top:0" scale="0 0 0" position="0 0 0"
+        rotation="90 0 0" material="color: #0099ff; transparent: true; opacity:0.5"></a-entity>
+
+    </a-entity>
+    <a-entity reverse-look-controls id="target" camera look-controls
+      orbit-controls="target: 0 1.6 -0.5; minDistance: 0.5; maxDistance: 180; initialPosition: 0 5 1">
+      <a-sphere scale="0 0 0">
+
+      </a-sphere>
+    </a-entity> -->
+
+    <a-entity controllerinput id="vrHeadsetControllerCursorLeft" laser-controls="hand: left; model:false;"
+      raycaster="objects: .clickable;enabled:true" line="color:red; opacity:0">
+    </a-entity>
+
+    <a-entity controllerinput id="vrHeadsetControllerCursorRight" laser-controls="hand: right; model:false;"
+      raycaster="objects: .clickable;enabled:true" line="color:red; opacity:0">
+    </a-entity>
+
+
+    <a-sphere id="rotate-sphere" transparent="true" material="opacity: 0.0">
+      <a-sphere id="rotate-sphere-2" transparent="true" material="opacity: 0.0">
+        <a-sky id="loadingTest" src="#video" position="0 0 0" rotation="0 270 0" 
+          allow="gyroscope; accelerometer; magnetometer">
+        </a-sky>
+      </a-sphere>
+    </a-sphere>
+
+    <a-plane transparent="true" material="opacity:0" id="mobileDisplay">
+    
+
+    </a-plane>
+
+    <a-plane id="bouncingArrow" material="color: white; opacity:0.3;" position='0 -2 -1' src="#upArrow" rotation="0 1 0"
+      scale="1 1 1">
+
+    </a-plane>
+    
+
+
+
+  </a-scene>
+
+  <div id="mobile-button" class="play-ios">
+    <button class="mobileButtonCenter" onclick="toggleVideoBigBtn()">Play</button>
+   
+  </div>
+
+
+  <div class="no-support overlay" id="no-support" style="display:none">
+    <div class="overlay-inner" id="english" lang="en">
+
+      <nav id="french-nav">
+        <a id="toggleFrench" onclick="changePermissionMessageLang('no-support','frenchDropdown')">Français</a>
+
+      </nav>
+      <div id="exitSpaceFrench">
+        <h1>Let's enable your motion sensors</h1>
+        <div class="step">
+          <h1>1.</h1>
+          <p>Open</p><span><img src="assets/ios-settings.png" alt="settings icon"></span>
+          <p>Settings</p>
+        </div>
+        <div class="step">
+          <h1>2.</h1>
+          <p>Select</p><span><img src="assets/safari.jpg" alt="safari icon"></span>
+          <p>Safari</p>
+        </div>
+        <div class="step">
+          <h1>3.</h1>
+          <p>Enable: Motion & Orientation Access</p>
+        </div>
+        <div class="step">
+          <h1>4.</h1>
+          <p>Reload the page</p><span><img src="assets/reload.png" alt="reload icon"></span>
+        </div>
+                <button id="startRecButton" type="button">Start</button>
+        <button id="stopRecButton" type="button"> Stop recording</button>
+        <div id="exitOverlay">
+          <p onclick="document.getElementById('no-support').style.display='none'">Continue Anyway</p>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  
+    <div lang="fr" id="frenchDropdown" style='display:none'>
+      <div class="overlay-inner" id="french">
+        <nav id="english-nav">
+          <a id="toggleEnglishh" onclick="changePermissionMessageLang('frenchDropdown','no-support')">English</a>
+
+        </nav>
+        <div id="exitSpace">
+          <h1>Activons vos capteurs de mouvement</h1>
+          <div class="step">
+            <h1>1.</h1>
+            <p> Allez dans</p><span><img src="assets/ios-settings.png" alt="settings icon"></span>
+            <p>Réglages </p>
+          </div>
+          <div class="step">
+            <h1>2.</h1>
+            <p>Sélectionnez </p><span><img src="assets/safari.jpg" alt="safari icon"></span>
+            <p>Safari </p>
+          </div>
+          <div class="step">
+            <h1>3.</h1>
+            <p>Activez :Accès aux mouvements et à l'orientation </p>
+          </div>
+          <div class="step">
+            <h1>4.</h1>
+            <p>Rechargez la page</p><span><img src="assets/reload.png" alt="reloadicon"></span>
+          </div>
+          <div id="exitOverlayFrench">
+            <p onclick="document.getElementById('frenchDropdown').style.display='none'">
+              Poursuivre quand même</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  
+
+  <div class="no-support overlay" id="android" style="display:none">
+    <div class="overlay-inner" id="english" lang="en">
+
+      <nav id="french-nav">
+        <a id="toggleFrenchA" onclick="changePermissionMessageLang('android','androidFrench')">Français</a>
+
+      </nav>
+      <div id="esa">
+        <h1>Let's enable your motion sensors</h1>
+        <div class="step">
+          <h1>1.</h1>
+          <p>Enter: <a href="chrome://flags/#enable-generic-sensor">chrome://flags/#enable-generic-sensor</a> In the url
+            bar</p>
+        </div>
+        <div class="step">
+          <h1>2.</h1>
+          <p>Enable the Generic Sensor</p>
+        </div>
+        <div class="step">
+          <h1>3.</h1>
+          <p>Click 'Relaunch Now</p>
+        </div>
+        <div id="exitA">
+          <p onclick="document.getElementById('android').style.display='none'">Continue Anyway</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <div lang="fr" id="androidFrench" style="display:none">
+    <div class="overlay-inner" id="french">
+      <nav id="english-nav">
+        <a id="toggleEnglishA" onclick="changePermissionMessageLang('androidFrench','android')">English</a>
+
+      </nav>
+      <div id="asaf">
+        <h1>Activons vos capteurs de mouvement</h1>
+        <div class="step">
+          <h1>1.</h1>
+          <p> Ouvrez Google Chrome et tapez "<a
+              href="chrome://flags/#enable-generic-sensor">chrome://flags/#enable-generic-sensor </a>" dans la barre
+            d'adresse</p>
+        </div>
+        <div class="step">
+          <h1>2.</h1>
+          <p>Cherchez "Generic Sensor" et changez "Disabled" pour "Enabled"</p>
+        </div>
+        <div class="step">
+          <h1>3.</h1>
+          <p> Cliquez sur "Relaunch Now"</p>
+        </div>
+        <div id="exitAF">
+          <p onclick="document.getElementById('androidFrench').style.display='none'"> Poursuivre quand même</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  
+
+    <!-- Client -->
+    <script src="/socket.io/socket.io.js"></script>
+<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+ 
+     <script src="http://172.18.90.169:5001/socket.io/socket.io.js"></script>
+
+  <script>
+$(function () {
+           var socket = io.connect("http://172.18.90.169:5001");
+                       // use your socket
+            socket.on("welcome", (message) => {
+                // do something with the message.
+            })
+    console.log(socket);
+
+  });
+
+  
+
+// var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition
+// var SpeechGrammarList = SpeechGrammarList || webkitSpeechGrammarList
+// var SpeechRecognitionEvent = SpeechRecognitionEvent || webkitSpeechRecognitionEvent
+
+// recognition.grammars = speechRecognitionList;
+// recognition.continuous = true;
+// recognition.lang = 'en-US';
+// recognition.interimResults = false;
+// recognition.maxAlternatives = 1;
+{# var recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition || window.mozSpeechRecognition || window.msSpeechRecognition)();
+recognition.lang = 'en-US';
+recognition.interimResults = false;
+recognition.maxAlternatives = 5;
+recognition.start();
+
+recognition.onresult = function(event) {
+    console.log('You said: ', event.results[0][0].transcript);
+}; #}
+
+// // Let's define our first command. First the text we expect, and then the function it should call
+// var commands = {
+//     'play video': function() {
+//         document.querySelector('video').play();
+//     },
+//     'pause video': function() {
+//         document.querySelector('video').pause();
+//     }
+//     '* video': function(word) {
+//         if(word === 'play') {
+//             document.querySelector('video').play();
+//         }
+//         else if(word === 'pause' || word === 'stop') {
+//             document.querySelector('video').pause();
+//         }
+//     }
+// };
+
+// // Add our commands to annyang
+// annyang.addCommands(commands);
+
+
+// Voice Command  Ends here
+
+
+
+// Stop whenever you want
+// UserDictation.stop();
+//           var UserDictation = artyom.newDictation({
+//     continuous:true, // Enable continuous if HTTPS connection
+//     onResult:function(text){
+//         // Do something with the text
+//         console.log(text);
+//     },
+//     onStart:function(){
+//         console.log("Dictation started by the user");
+//     },
+//     onEnd:function(){
+//         alert("Dictation stopped by the user");
+//     }
+// });
+
+// UserDictation.start();
+
+// Stop whenever you want
+// UserDictation.stop();
+      
+   </script>   
+   
+
+  <script>
+      let thisInterval = 0
+      window.setInterval(() => {
+        if (document.getElementById('controls').getAttribute('visible') && document.getElementById('play-ring').getAttribute('theta-length') == 0.05) {
+          thisInterval++;
+          if (thisInterval > 7) {
+            document.getElementById('controls').children[10].click();
+            thisInterval = 0;
+          }
+        }else {
+          thisInterval = 0;
+        }
+      }, 1000)
+    </script>
+    
+  <script>
+      $(document).ready(function () {
+        function getCookie(name) {
+          // Split cookie string and get all individual name=value pairs in an array
+          var cookieArr = document.cookie.split(";");
+
+          // Loop through the array elements
+          for (var i = 0; i < cookieArr.length; i++) {
+            var cookiePair = cookieArr[i].split("=");
+
+            /* Removing whitespace at the beginning of the cookie name
+        and compare it with the given string */
+            if (name == cookiePair[0].trim()) {
+              // Decode the cookie value and return
+              return decodeURIComponent(cookiePair[1]);
+            }
+          }
+
+          // Return null if not found
+          return null;
+        }
+        const userLogged = getCookie("username");
+        if (!userLogged) {
+          //window.location.assign(OUR_URL.LANDING_PAGE);
+          //window.location.href = "http://localhost/login.html";
+          //$(location).attr('href', 'http://localhost/login.html');
+        }
+      });
+    </script>
+    <script>
+      console.log('after aframe elements mount')
+    //set videotag global variable
+    videoTag=document.getElementById('video')
+
+    initialSetLanguage()
+
+    showMotionPermissionsMessage()
+    addMotionDetectionCheck()
+
+
+    let accessToken = ''
+    let secondsWatched = 0;
+    setInterval(() => {
+      if (!((document.getElementById('video')).paused)) {
+        ++secondsWatched;
+      }
+    }, 1000)
+
+    setTimeout(() => {
+      window.addEventListener('beforeunload', (e) => {
+        fetch(OUR_URL.SERVER_HOST + "/api/videos/clearuservideohash/?hash=" + videoHash + '&userId=' + userId + '&accessToken=' + accessToken + '&seconds=' + secondsWatched)
+      })
+    }, 500);
+
+    function checkHashAndGetVideo() {
+  
+      let time = Date.now().toString();
+      accessToken = time + videoHash;
+      accessToken = sha256(accessToken);
+
+      //INITIAL CHECK USER HASH AND GET VIDEO
+      fetch(OUR_URL.SERVER_HOST + "/api/videos/checkuservideohash/", {
+        method: "POST",
+        body: JSON.stringify({ hash: videoHash, userId: userId, accessToken: accessToken }),
+        mode: "cors",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }).then((response) => {
+        console.log(response);
+        return response.json();
+      }).then((response) => {
+        console.log('this dang problem', response);
+        console.log(typeof(response));
+        if (!response.sources) {
+          console.log("no sources");
+          window.location.assign(OUR_URL.LANDING_PAGE);
+        }
+
+
+        //will be dash video
+        let source0 = {};
+
+        //will be hls video
+        let source1 = {};
+
+        response.sources.map(source => {
+          if (source.type === "application/dash+xml") {
+            source0.src = source.source;
+            source0.type = source.type;
+          }
+          if (source.type === "application/x-mpegURL") {
+            source1.src = source.source;
+            source1.type = source.type;
+          }
+        });
+        console.log("source0", source0);
+        console.log("source1", source1);
+
+        let videoTag = document.getElementById("video");
+
+        let sourceTag1 = document.createElement("source");
+        sourceTag1.setAttribute("src", source0.src);
+        sourceTag1.setAttribute("type", source0.type);
+
+        let sourceTag2 = document.createElement("source");
+        sourceTag2.setAttribute("src", source1.src);
+        sourceTag2.setAttribute("type", source1.type);
+
+        // videoTag.appendChild(sourceTag1);
+        videoTag.appendChild(sourceTag2);
+        currentVideoSrc = source1.src
+        // currentVideoSrc="https://marcobucketnomads.s3.amazonaws.com/TourismTeaser_07-26-19_STEREO_TEMPTRACK.m3u8"
+        console.log('currentVideoSource', currentVideoSrc)
+
+        
+
+        // console.log('before manifest parsed')
+        //for playing hls
+        // if (Hls.isSupported()) {
+          console.log('playing hls source')
+          loadNewVideo(currentVideoSrc)
+      
+          video.onloadedmetadata = (event) => {
+            let timeToString = (time) => {
+              if (time < 60) {
+                if (time < 10) {
+                  return '0:0' + (parseInt(time).toString());  
+                }
+                return '0:' + (parseInt(time).toString());
+              }
+              let minutes = parseInt(time/60);
+              let seconds = (time - (60 * minutes))
+              if (seconds < 10) {
+                return minutes + ':0' + parseInt((time - (60 * minutes)))
+              }
+              return minutes + ':' + parseInt((time - (60 * minutes)))
+            }
+            let playUpdateInterval = setInterval(() => {
+              let rightNow = timeToString(video.currentTime)
+              if (rightNow.split(':')[0].length == 2) {
+                document.getElementById('currentTime').setAttribute('position', '-0.6125 -2.2 0')
+              }
+              if (rightNow.split(':')[0].length == 1) {
+                document.getElementById('currentTime').setAttribute('position', '-0.5 -2.2 0')
+              }
+              document.getElementById('currentTime').setAttribute('value', rightNow);
+            }, 1000)
+            document.getElementById('totalTime').setAttribute('value', '/' + timeToString(video.duration))
+          }
+
+
+
+
+
+      
+
+
+        
+
+      });
+      //restarts video if it
+      videoTag.addEventListener("error", error => {
+        console.log("error123", error);
+        console.log('timestamp',error.timeStamp)
+        let currentTime = video.currentTime
+        console.log('currentTime', currentTime)
+        hls.recoverMediaError
+
+        // hls = new Hls()
+        // console.log('loading source')
+        // console.log('currentVideoSource', currentVideoSrc)
+
+        // // hls.loadSource('https://videouploadwork123222.s3.amazonaws.com/converted/multibitrateRoto.m3u8');
+        // hls.loadSource(currentVideoSrc);
+        
+        // console.log('hls', hls)
+        // console.log('attaching media')
+        // hls.attachMedia(videoTag)
+        // console.log('hls', hls)
+        // hls.on(Hls.Events.MANIFEST_PARSED, function () {
+        //   console.log('manifest was parsed')
+        //   videoTag.currentTime = currentTime - .2
+        //   videoTag.oncanplay = () => {
+        //     console.log('can play')
+        //     console.log('newTime', videoTag.currentTime)
+        //     console.log('starting play timeout')
+        //     setTimeout(() => videoTag.play(), 1000)
+        //   }
+
+          // console.log('going to play video after reloading')
+          // videoTag.play();
+        // });
+      });
+    }
+    
+    //to run whenever video can play again
+    videoTag.addEventListener('canplay',evt=>{
+      console.log('video can play')
+    })
+
+    videoTag.addEventListener("error", error => {
+      videoErrorCount++
+      console.log("error123", error);
+      console.log('timestamp',error.timeStamp)
+      let currentTime = video.currentTime
+      console.log('currentTime', currentTime)
+      hls = new Hls()
+      console.log('loading source')
+      console.log('currentVideoSource', currentVideoSrc)
+
+      // hls.loadSource('https://videouploadwork123222.s3.amazonaws.com/converted/multibitrateRoto.m3u8');
+      hls.loadSource(currentVideoSrc);
+      
+      console.log('hls', hls)
+      console.log('attaching media')
+      hls.attachMedia(videoTag)
+      console.log('hls', hls)
+      hls.on(Hls.Events.MANIFEST_PARSED, function () {
+        console.log('manifest was parsed')
+        videoTag.currentTime = currentTime - .2
+        videoTag.oncanplay = () => {
+          console.log('can play')
+          console.log('newTime', videoTag.currentTime)
+          console.log('starting play timeout')
+          setTimeout(() => videoTag.play(), 1000)
+        }
+
+        // console.log('going to play video after reloading')
+        // videoTag.play();
+      });
+
+      // hls.recoverMediaError()
+      // videoTag.oncanplay=()=>{
+      //   console.log('can play')
+      // }
+
+    });
+
+
+    // checkHashAndGetVideo()
+
+    setInterval(() => {
+        fetch(OUR_URL.SERVER_HOST + '/api/videos/lastupdate/?userId='+ userId + '&accessToken=' + accessToken + '&seconds=' + secondsWatched)
+        secondsWatched = 0;
+      }, 120000);
+
+  
+
+    //SET UP CURSOR BASED ON WHETHER USER HAS AN OCULUS OR NOT
+    leftControllerTag = document.getElementById('vrHeadsetControllerCursorLeft')
+    rightControllerTag = document.getElementById('vrHeadsetControllerCursorRight')
+
+    setTimeout(() => {
+      setCorrectCursor();
+      // initializeInstructions();
+      renderInstructions(currentLanguage)
+      document.getElementById('video').onplay=destroyInstructions
+      setTimeout(()=>{
+        destroyInstructions()
+      },20000)
+
+
+      console.log('currentDeviceType', currentDeviceType)
+      // if(currentDeviceType===DEVICE_TYPES.IOS){
+      //   console.log('rotating sky for iphone')
+      //   let skyTag=document.getElementsByTagName('a-sky')[0]
+      //   skyTag.setAttribute('rotation','180 270 0')
+      // }
+    }, 2500)
+    
+
+
+    let scene = document.querySelector("a-scene");
+    let vid = document.getElementById("video");
+    vid.addEventListener("ended", () => {
+      scene.exitVR();
+      if (window.location.search == '' || window.location.search == '?blackhawks' || window.location.search == '?travel-the-world' || window.location.search == '?golf-tournament') {
+        window.location.assign(OUR_URL.LANDING_PAGE);
+      }else {
+        window.location.assign(OUR_URL.VR_PAGE);
+      }
+    });
+    let button = document.querySelector("a-plane");
+
+
+
+    var isMobile = {
+      Android: function () {
+        return navigator.userAgent.match(/Android/i);
+      },
+      BlackBerry: function () {
+        return navigator.userAgent.match(/BlackBerry/i);
+      },
+      iOS: function () {
+        return navigator.userAgent.match(/iPhone|iPad|iPod/i);
+      },
+      Opera: function () {
+        return navigator.userAgent.match(/Opera Mini/i);
+      },
+      Windows: function () {
+        return navigator.userAgent.match(/IEMobile/i);
+      },
+      any: function () {
+        return (
+          isMobile.Android() ||
+          isMobile.BlackBerry() ||
+          isMobile.iOS() ||
+          isMobile.Opera() ||
+          isMobile.Windows()
+        );
+      }
+    };
+    let timeoutID;
+    if (isMobile.any()) {
+      document.onvisibilitychange = () => {
+        console.log('timeout', timeoutID);
+        if (document.visibilityState.match(/hidden/i)) {
+          timeoutID = window.setTimeout(() => {
+            fetch(OUR_URL.SERVER_HOST + "/api/videos/clearuservideohash/?userId=" + userId + '&accessToken=' + userToken +  '&seconds=' + secondsWatched).then((response) => {
+                return response.text();
+              }).then((response) => {
+                // console.log('response from beforeunload', response);
+                if (window.location.search == '' || window.location.search == '?blackhawks' || window.location.search == '?travel-the-world' || window.location.search == '?golf-tournament') {
+                  window.location.assign(OUR_URL.LANDING_PAGE);
+                }else {
+                  window.location.assign(OUR_URL.VR_PAGE);
+                }
+              })
+          }, 30000);
+        }else if (document.visibilityState.match(/visible/i)) {
+          if (timeoutID) {
+            clearTimeout(timeoutID);
+          }
+        }
+      }
+    }
+    /* if the device is not ios hide the download button */
+    
+
+
+    var circle = anime({
+      targets: [".loader"],
+      rotate: 180,
+      duration: 1600,
+      loop: true,
+      elasticity: 600,
+      easing: "easeOutElastic",
+      delay: function (el, index) {
+        return index * 80;
+      }
+    });
+    document.addEventListener("DOMContentLoaded", function () {
+      // console.log("hello");
+      // console.log("Yay! The readyState just increased to  " + "HAVE_CURRENT_DATA or greater for the first time.");
+
+      // var scene = document.querySelector('a-scene');
+      // var cameraTimeout = document.getElementById("nomadsLoading");
+      var blur = document.getElementById("mobileDisplay");
+      var activeMobile = document.getElementById("mobile-button");
+      scene.addEventListener("loaded", function (e) {
+        blur.style.transparent = "false";
+        blur.style.opacity = "1";
+        blur.style.transform = "rotate(0deg)";
+        activeMobile.style.display = "flex";
+        activeMobile.style.opacity = "1";
+        // cameraTimeout.style.display = "block";
+        //   document.getElementById("animeDemo").style.display = "block";
+      });
+    });
+    // document.getElementById("mobile-button").onclick = function () {
+
+    document.getElementById("mobile-button").style.display = "none";
+    // document.getElementById("mobileDisplay").style.display = "none";
+    // document.getElementById("instructions").style.opacity="1";
+    // document.getElementById("instructions").transparent="false";
+    // docuent.getElementById("instructions").style.display = "block";
+
+    video.addEventListener('canplaythrough', function () {
+      var promise = video.pause();
+      if (promise !== undefined) {
+        promise.catch(function (error) {
+          console.error('Auto-play was prevented');
+          console.error('We Show a UI element to let the user manually start playback');
+          activeMobile.style.display = 'block';
+        }).then(function () {
+          console.info('Auto-play started');
+          document.getElementById("mobile-button").style.display = 'none';
+        });
+      }
+    }); //  Fires when the browser can play through the audio/video without stopping for buffering
+
+
+    //FROM KONRAD TEST VIDEO
+    // loadNewVideo('https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8')
+    // loadNewVideo('https://slatebucketnomads.s3.amazonaws.com/Finale_Teaser_v007_VolBot_b_03_22_2019.m3u8')
+    // loadNewVideo('https://slatebucketnomads.s3.amazonaws.com/Nationalanthem.m3u8')
+    loadNewVideo('https://d3foiv3ve2hexh.cloudfront.net/out/v1/c80b00b12f074e6cb80886a31e3d519a/index.m3u8')
+      //SET UP INTERVAL FOR DEVTOOLS SHOWING VIDEO INFO
+      if(window.location.hash.slice(1)==='dev'){
+      setInterval(updateVideoInfo,1000)
+      }
+
+      
+      window.onload=()=>{
+
+      setUploadSpeed()
+      setDownloadSpeed()
+      }
+      
+
+
+
+    
+    </script>
+
+    
+   
+
+
+</body>
+
+</html>

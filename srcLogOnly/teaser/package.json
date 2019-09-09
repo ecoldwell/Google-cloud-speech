@@ -1,0 +1,39 @@
+{
+  "name": "aframe-hello-world-boilerplate",
+  "description": "Boilerplate with A-Frame's 'Hello, World!' of WebVR.",
+  "version": "0.3.0",
+  "license": "MIT",
+  "scripts": {
+    "start": "budo --live --verbose --port 5001 --open",
+    "deploy": "ghpages",
+    "ghpages": "ghpages"
+  },
+  "devDependencies": {
+    "budo": "^11.6.2",
+    "ghpages": "0.0.10"
+  },
+  "keywords": [
+    "aframe",
+    "aframe-example",
+    "aframe-boilerplate",
+    "aframe-scene",
+    "webvr",
+    "vr"
+  ],
+  "dependencies": {
+    "aframe-animation-component": "^5.1.2",
+    "animejs": "^3.0.1",
+    "artyom.js": "^1.0.6",
+    "browserify": "^16.5.0",
+    "file-saver": "^2.0.2",
+    "http-browserify": "^1.7.0",
+    "node-sass": "^4.11.0",
+    "sass": "^1.17.3",
+    "shaka": "^3.0.1",
+    "shaka-player": "^2.5.0-beta3",
+    "video-js": "^0.7.0",
+    "video.js": "^7.5.3",
+    "videojs-errors": "^4.2.0",
+    "videojs-vr": "^1.5.0"
+  }
+}

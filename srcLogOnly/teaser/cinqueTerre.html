@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <script src="https://aframe.io/releases/0.9.0/aframe.min.js"></script>
+      <script src="https://unpkg.com/aframe-supercraft-loader/dist/aframe-supercraft-loader.min.js"></script> 
+      <script src="https://unpkg.com/aframe-environment-component/dist/aframe-environment-component.min.js"></script>
+      <script src="https://unpkg.com/aframe-orbit-controls@1.0.0/dist/aframe-orbit-controls.min.js"></script>
+      <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
+      <script src="//cdnjs.cloudflare.com/ajax/libs/animejs/2.0.2/anime.min.js"></script>
+      <script src="dist/aframe-video-controls.js"></script>
+      <link href="https://vjs.zencdn.net/7.4.1/video-js.css" rel="stylesheet">
+      <script src="https://vjs.zencdn.net/ie8/1.1.2/videojs-ie8.min.js"></script>
+      <script src='https://vjs.zencdn.net/7.4.1/video.js'></script>
+      <script src="https://unpkg.com/super-hands@3.0.0/dist/super-hands.min.js"></script>
+      <script src="https://unpkg.com/aframe-gltf-part-component/dist/aframe-gltf-part-component.min.js"></script> 
+      <script src="https://unpkg.com/aframe-state-component@^3.0.0/dist/aframe-state-component.min.js"></script> 
+      <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=UA-125950486-1"></script>
+      <script>
+       window.dataLayer = window.dataLayer || [];
+       function gtag(){dataLayer.push(arguments);}
+       gtag('js', new Date());
+      
+       gtag('config', 'UA-125950486-1');
+      </script>
+      <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+          })(window,document,'script','dataLayer','GTM-WNZHBX4');</script> -->
+
+  <style type="text/css">
+    #video-permission {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: white;
+      z-index: 10000;
+      display: none;
+    }
+    #video-permission-button {
+      position: fixed;
+      top: calc(50% - 1em);
+      left: calc(50% - 60px);
+      width: 120px;
+      height: 2em;
+    }
+    html {
+      height: 100%;
+      width: 100%;
+      padding: 0;
+      margin: 0;
+    }
+    body {
+      height: 100%;
+      width: 100%;
+      padding: 0;
+      margin: 0;
+      overflow: hidden;
+    }
+    object {
+      height: 100%;
+      width: 100%
+    }
+    #video {
+      width: 100%;
+      height: 100%
+    }
+
+
+    #playPlane,
+    #backPlane {
+      visibility:hidden;
+      opacity:0;
+      transition: 7s ease all;
+    }
+
+    #playPlane:hover,
+    #backPlane:hover {
+      visibility:visible;
+      opacity:1;
+    }
+
+    .transition {
+      transition: visibility 0s linear 300ms, opacity 300ms !important;
+    }
+    a-plane {
+      border:3px solid black;
+    }
+
+    .loadingWrapper {
+      position:absolute;
+      width:100vw;
+      height:100vh;
+      top:0;
+      bottom:0;
+      right:0;
+      left:0;
+      display:block;
+      background-color:black;
+    }
+  .center {
+      position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translateX(-50%) translateY(-50%);
+
+}
+.circle {
+  background-color: #fff;
+  display: inline-block;
+  border-radius: 50%;
+  margin: 5px;
+  box-shadow: 0 -5px 5px 1px rgba(0,0,0,0.2);
+  width:20px;
+  height:20px;
+}
+
+.circle-1 {
+  background-color: #00ffff ;
+  background: linear-gradient(tint( #00ffff , -100%), tint( #00ffff , 20%));
+}
+
+.circle-2 {
+  background-color: white;
+  background: linear-gradient(tint(white, -10%), tint(white,30%));
+}
+#mobile-button {
+  /* display: block; */
+    position: fixed;
+
+    width: 100vw;
+    height: 100vh;
+    visibility:hidden;
+    justify-content: center;
+    align-items: center;
+    opacity:0;
+    /* display:none; */
+
+}
+
+#mobile-button button {
+  height: 8vh;
+    width: 25vw;
+    border: 1px solid white;
+    color:white;
+    z-index:0;
+}
+
+
+.a-loader-title {
+    display:none !important;
+}
+canvas {
+    background-color:black;
+}
+
+.a-fullscreen .a-canvas {
+    background-color:black !important;
+
+}
+  </style>
+</head>
+<body>
+    <!-- <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WNZHBX4"
+      height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript> -->
+<script>
+AFRAME.registerComponent('play-on-focus', {
+  schema: {
+        color: { default: 'red' }
+      },
+      init: function () {
+        let vid = document.getElementById('video');
+        // var vid = videojs('video');
+        let data = this.data;
+        let el = this.el;
+      }
+    });
+    AFRAME.registerComponent('controls-appear', {
+      init: function () {
+        let el = this.el;
+        let data = this.data;
+        let controlbar = document.getElementById('controls');
+        let cursor = document.getElementById('cursorToggle')
+        el.addEventListener('mouseenter', function () {
+          console.log('Enter');
+          cursor.setAttribute('visible', 'true');
+          controlbar.setAttribute('visible', 'true');
+
+        });
+        el.addEventListener('mouseleave', function () {
+          console.log('Leave');
+
+          cursor.setAttribute('visible', 'false');
+          controlbar.setAttribute('visible', 'false');
+
+        });
+      }
+    })
+ </script>
+  <a-scene loading-screen="dotsColor: white; backgroundColor: black" z-index:9999999999999999999999999999;>
+    <a-entity sphere-collider="objects: a-box" laser-controls oculus-go-controls super-hands="colliderEvent: raycaster-intersection;
+      colliderEventProperty: els;
+      colliderEndEvent: raycaster-intersection-cleared;
+      colliderEndEventProperty: clearedEls;
+    " hand-controls raycaster="showLine:true;" line="opacity:1.0;">
+  </a-entity>
+  <a-entity id="controls" 
+    clickable
+    grabbable
+    draggable
+    visible="true"
+    video-controls="src:#video; distance:3; size:4;" 
+    controls-appear
+    position="0 -0.3 -1.5" text="align:center; 
+   ">
+  </a-entity>
+
+  <a-entity position="0 2.2 4">
+    <a-entity camera look-controls="reverseMouseDrag: true" wasd-controls mouse-cursor >
+      <a-entity position="0 0 -3"
+        geometry="primitive: ring; radiusOuter: 0.30;
+        radiusInner: 0.20;"
+         super-hands="colliderEvent: raycaster-intersection;
+          colliderEventProperty: els;
+          colliderEndEvent: raycaster-intersection-cleared;
+          colliderEndEventProperty: clearedEls"
+          oculus-go-controls
+           material="color: cyan; shader: flat"
+          cursor="maxDistance: 30; fuse: true"
+          scale = "0.1 0.1 0.1"
+          visible = "false" 
+          id = "cursorToggle"
+          proxy-event__enter="event: mouseenter; to: a-plane; as: foo"
+          proxy-event__leave="event: mouseleave; to: a-plane; as: bar"
+          animation__enter="enabled: true; property: scale; from: 1 1 1; to: 0.1 0.1 0.1; dur:1500; easing: easeInQuad; startEvents: mouseenter"
+          animation__click="enabled: true; property: scale; from: 1 1 1; to: 0.1 0.1 0.1; dur:150; easing: easeInQuad; startEvents: click">
+          <a-animation begin="click" easing="ease-in" attribute="scale"
+         fill="backwards" from="0.1 0.1 0.1" to="1 1 1" dur="150"></a-animation>
+          <a-animation begin="fusing" easing="ease-in" attribute="scale"
+         fill="forwards" from="1 1 1" to="0.1 0.1 0.1" dur="1500"></a-animation>
+       </a-entity>
+    </a-entity>
+  </a-entity>
+  <a-assets>
+    <!-- <video id="video" class="video-js vjs-default-skin" autoplay muted preload="auto" crossOrigin="anonymous"
+      width="100%" height="100%" controls playsinline webkit-playsinline  data-dashjs-player >
+      <source
+      src="http://nomadsstagmediaservices-caea.streaming.media.azure.net/9a3c85a7-36f3-4631-9d31-9964fb588aee/Finale_Teaser_v007_VolBot_b_03_2.ism/manifest(format=m3u8-aapl-v3)"
+      type="application/x-mpegURL">
+    <source
+      src="http://nomadsstagmediaservices-caea.streaming.media.azure.net/9a3c85a7-36f3-4631-9d31-9964fb588aee/Finale_Teaser_v007_VolBot_b_03_2.ism/manifest(format=m3u8-aapl-v3)"
+      type="application/x-mpegURL">
+      <source
+     src="http://nomadsstagmediaservices-caea.streaming.media.azure.net/9a3c85a7-36f3-4631-9d31-9964fb588aee/Finale_Teaser_v007_VolBot_b_03_2.ism/manifest(format=mpd-time-csf)"
+    type="application/dash+xml">
+     </video> -->
+       <!-- MP4 video source. -->
+    <video id="cinqueTerre" 
+    autoplay loop crossorigin="anonymous" playsinline webkit-playsinline>
+      <source type="video/mp4"
+      src="https://nomadsprodvideostorage01.blob.core.windows.net/asset-a3706dd9-6e2a-4ee7-bcdb-797b8c5cc80e/CinqueTerre.mp4?sv=2017-04-17&sr=c&si=64b5d004-17d9-4d29-b8f3-0d8caeeba06a&sig=CsVZ0hR%2FfpRv7C9ex7L%2F8hbndvWzoewwsI8Ozm9jLSo%3D&st=2019-01-24T15%3A21%3A30Z&se=2119-01-28T03%3A21%3A30Z" />
+    </video>
+  </a-assets>
+  <a-entity
+      camera look-controls="reverseMouseDrag: true" orbit-controls="target: 0 1.6 -0.5; minDistance: 0.5; maxDistance: 180; initialPosition: 0 5 15"
+      >
+    <a-entity geometry="primitive:cone; radius-bottom:1; radius-top:0" scale="0 0 0" position="0 0 0" rotation="90 0 0"></a-entity>
+  </a-entity>
+    <a-entity reverse-look-controls id="target" camera look-controls="reverseMouseDrag: true" orbit-controls="target: 0 1.6 -0.5; minDistance: 0.5; maxDistance: 180; initialPosition: 0 5 1">
+        <a-sphere scale="0 0 0">
+              <!-- <a-animation attribute="position" to="-10 2.2 -5" direction="alternate" dur="2000"
+      repeat="indefinite"></a-animation> -->
+       </a-sphere>
+     </a-entity>
+    <a-sky id="video" src="#cinqueTerre" position="0 0 0" rotation="0 270 0"></a-sky>
+      <a-plane transparent = "true" material="opacity:0" id="mobileDisplay">
+        <div id="mobile-button" class = "play-ios">
+         <button onclick="toggleVideo()">Play</button>
+        </div>
+      </a-plane>
+</a-scene>
+  <script>
+    if ('SamsungChangeSky' in window) {
+      window.SamsungChangeSky({ sphere: 'samples/milford-sound.jpg' });
+    }
+  </script>
+  <script src="dist/AVideoPlayer.js"></script>
+  <script src="dist/videoJS.js"></script>
+    </body>
+</html>

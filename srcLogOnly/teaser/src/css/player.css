@@ -1,0 +1,33 @@
+@import "../../node_modules/video.js/dist/video-js.css";
+
+
+.webvr-back {
+    position: absolute;
+    top: 2vw;
+    left: 2vw;
+}
+.webvr-back .back-button {
+    color: white;
+    font-family: helvetica;
+    letter-spacing: 0.03em;
+    font-weight: lighter;
+    border: 1px solid;
+    padding: 1vw;
+    font-size: 10px;
+    list-style: none;
+    text-decoration: none;
+}
+
+body {
+    position:relative;
+}
+.vjs-big-play-button {
+    position: absolute;
+    left: 50% !important;
+    margin-left: -50px !important;
+    top: 50% !important;
+    margin-top: -50px !important;
+    width:3em;
+    height:1.5em;
+
+}

@@ -1,0 +1,2282 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta>
+  <script src="https://github.com/aframevr/aframe/blob/master/dist/aframe-master.min.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/gh/aframevr/aframe@1f55d4854fcdb64aad300aac04e6dd64693a48ad/dist/aframe-master.min.js"></script>
+  <!-- <script src="https://unpkg.com/aframe-supercraft-loader/dist/aframe-supercraft-loader.min.js"></script> -->
+  <script src="https://unpkg.com/aframe-environment-component/dist/aframe-environment-component.min.js"></script>
+  <script src="https://unpkg.com/aframe-orbit-controls@1.0.0/dist/aframe-orbit-controls.min.js"></script>
+  <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/core.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/animejs/2.0.2/anime.min.js"></script>
+  <!-- <script src="dist/bottom-controls.js"></script> -->
+  <link rel="stylesheet" href="loadingmodule/loading-module.css">
+  <link href="https://vjs.zencdn.net/7.4.1/video-js.css" rel="stylesheet" />
+  <script src="https://vjs.zencdn.net/ie8/1.1.2/videojs-ie8.min.js"></script>
+  <script src="https://vjs.zencdn.net/7.4.1/video.js"></script>
+  <script src="./dist/aframe-rounded-component.min.js"></script>
+  <!-- <script src="dist/AVideoPlayer.js"></script> -->
+  <!-- <script src="https://cdn.jsdelivr.net/gh/aframevr/aframe-inspector@master/dist/aframe-inspector.min.js"></script> -->
+  <script>
+    let userId = 0;
+    document.cookie.split('; ').forEach((el) => {
+      if (el.search(/userid/i) >= 0) {
+        userId = el.split('=')[1];
+      };
+    });
+    // console.log('userId is ', userId);
+    let videoHash = window.location.search.slice(1)
+    
+    function loadjscssfile(filename, filetype) {
+      if (filetype == "js") { //if filename is a external JavaScript file
+        var fileref = document.createElement('script')
+        fileref.setAttribute("type", "text/javascript")
+        fileref.setAttribute("src", filename)
+      }
+      else if (filetype == "css") { //if filename is an external CSS file
+        var fileref = document.createElement("link")
+        fileref.setAttribute("rel", "stylesheet")
+        fileref.setAttribute("type", "text/css")
+        fileref.setAttribute("href", filename)
+      }
+      if (typeof fileref != "undefined")
+        document.getElementsByTagName("head")[0].appendChild(fileref)
+    }
+    
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script>
+
+    let hasMotionEvents_ = false
+    // console.log(hasMotionEvents_, '!!!!!!!!!!!!!!');
+    const motionListener = () => {
+      hasMotionEvents_ = true
+      document.getElementById("no-support").style.display = "none";
+      document.getElementById("frenchDropdown").style.visibility = "hidden";
+
+
+      window.removeEventListener('devicemotion', motionListener)
+    }
+    window.addEventListener('devicemotion', motionListener)
+
+
+  </script>
+
+  <style type="text/css">
+    #video-permission {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: white;
+      z-index: 10000;
+      display: none;
+    }
+
+    #video-permission-button {
+      position: fixed;
+      top: calc(50% - 1em);
+      left: calc(50% - 60px);
+      width: 120px;
+      height: 2em;
+    }
+
+    html {
+      height: 100%;
+      width: 100%;
+      padding: 0;
+      margin: 0;
+    }
+
+    body {
+      height: 100%;
+      width: 100%;
+      padding: 0;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    object {
+      height: 100%;
+      width: 100%;
+    }
+
+    #video {
+      width: 100%;
+      height: 100%;
+    }
+
+    #playPlane,
+    #backPlane {
+      visibility: hidden;
+      opacity: 0;
+      transition: 7s ease all;
+    }
+
+    #playPlane:hover,
+    #backPlane:hover {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .transition {
+      transition: visibility 0s linear 300ms, opacity 300ms !important;
+    }
+
+    .loadingWrapper {
+      position: absolute;
+      width: 100vw;
+      height: 100vh;
+      top: 0;
+      bottom: 0;
+      right: 0;
+      left: 0;
+      display: block;
+      /* background-color: black; */
+    }
+
+    .center {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translateX(-50%) translateY(-50%);
+    }
+
+    .circle {
+      background-color: #fff;
+      display: inline-block;
+      border-radius: 50%;
+      margin: 5px;
+      box-shadow: 0 -5px 5px 1px rgba(0, 0, 0, 0.2);
+      width: 20px;
+      height: 20px;
+    }
+
+    .circle-1 {
+      background-color: #00ffff;
+      background: linear-gradient(tint(#00ffff, -100%), tint(#00ffff, 20%));
+    }
+
+    .circle-2 {
+      background-color: white;
+      background: linear-gradient(tint(white, -10%), tint(white, 30%));
+    }
+
+    #mobileDisplay {
+      opacity: 1;
+      transform: rotate(0deg);
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      right: 0;
+      left: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      /* margin-top:10vw; */
+    }
+
+    #mobile-button {
+      /* display: block; */
+      position: fixed;
+      /* 
+      width: 100vw;
+      height: 100vh;
+      /* visibility: hidden; */
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      display: flex;
+      flex-direction: column;
+      display: block;
+      margin: 0 auto;
+      text-align: center;
+
+      /* display:none; */
+    }
+
+    #mobile-button button {
+      height: 8vh;
+      width: 25vw;
+      border: 1px solid white;
+      color: white;
+      z-index: 0;
+      background-color: transparent;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-size: 1.5rem;
+      text-align: center;
+      /* display: flex; */
+      align-items: center;
+      justify-content: center;
+
+
+    }
+
+    .mobileButtonCenter {
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
+    }
+
+
+
+    #loadingCircles {
+      /* display: block; */
+      position: fixed;
+
+      width: 100vw;
+      height: 100vh;
+      /* visibility: hidden; */
+      justify-content: center;
+      align-items: center;
+      opacity: 1;
+      /* display:none; */
+    }
+
+    /* #animeDemo {
+  background:transparent;
+} */
+
+    .mobileIOS {
+      /* display:flex; */
+    }
+
+    .a-loader-title {
+      display: none !important;
+    }
+
+    canvas {
+      /* background-color: black; */
+    }
+
+    .a-fullscreen .a-canvas {
+      /* background-color: black !important; */
+    }
+
+    #no-support {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      right: 0;
+      left: 0;
+      background-color: white;
+      display: flex;
+      flex-direction: column;
+      font-family: helvetica;
+      padding: 4vw;
+      display: none;
+      /* overflow:scroll; */
+      height: 100%;
+      overflow: scroll;
+      min-height: 100%;
+    }
+
+    .instructionss {
+      width: 60vw !important;
+      border: 0px solid !important;
+      color: white;
+      z-index: 0;
+      background-color: rgba(56, 58, 59, 0.3) !important;
+      text-transform: none !important;
+      letter-spacing: 0.1em;
+      font-size: 0.75rem !important;
+      text-align: left;
+      /* display: none !important; */
+      /* align-items: flex-start !important;
+    justify-content: flex-start !important; */
+      height: 100% !important;
+      margin-top: 4vw !important;
+      padding: 2vw;
+      flex-direction: column !important;
+      font-family: "helvetica";
+
+      /* display:none !important; */
+    }
+
+    .instructionss a {
+      display: flex !important;
+      text-align: right !important;
+      justify-content: flex-end !important;
+      width: 100% !important;
+      width: 100%;
+      text-align: right;
+      margin-bottom: 10px;
+
+    }
+
+    .instructionss p {
+      display: flex !important;
+      text-align: center;
+      justify-content: center;
+      width: 100% !important;
+      width: 100%;
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 18px !important;
+      padding-top: 0;
+      margin-top: 0;
+    }
+
+    .instructionss ul {
+      /* list-style:none; */
+      margin: 0;
+      padding-left: 4vw;
+      padding-bottom: 4vw;
+    }
+
+    .instructionss ul li {
+      padding: 5px 0;
+      margin: 0;
+    }
+
+    #instructions {
+      display: none;
+      /* opacity:0;
+      visibility:hidden; */
+
+    }
+
+    #instructionsFR {
+      display: none;
+      /* visibility:hidden;
+      opacity:0; */
+      /* position:absolute;  */
+    }
+
+    #instructionsVR {
+      display: none;
+      /* position:absolute; */
+    }
+
+    #instructionsVRFR {
+      display: none;
+      /* opacity:0;
+      visibility:hidden; */
+      /* position:absolute;  */
+
+    }
+
+    .overlay-inner {
+      height: 100%;
+      width: 100%;
+      /* background-color: white; */
+
+      display: flex;
+      flex-direction: column;
+    }
+
+    h1 {
+      font-family: "helvetica";
+      font-weight: lighter;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .step {
+      display: flex;
+      align-items: center;
+      font-family: "helvetica";
+      letter-spacing: 0.1em;
+      font-size: 13px;
+      /* flex-wrap:wrap; */
+    }
+
+    .step h1 {
+      margin-right: 10px;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .step span {
+      width: 10vw;
+      padding: 3vw;
+    }
+
+    img {
+      width: 100%;
+    }
+
+    #frenchDropdown {
+      background-color: white;
+      z-index: 9999999999999;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      right: 0;
+      left: 0;
+      height: 100%;
+      /* width: 100%; */
+      padding: 4vw;
+      opacity: 0;
+      overflow: scroll;
+      min-height: 100%;
+
+
+    }
+
+    #exitOverlay,
+    #exitOverlayFrench {
+      font-size: 15px;
+      font-family: "helvetica";
+      padding-top: 4vw;
+      /* border-bottom:2px solid; */
+      font-weight: bold;
+      display: flex;
+      justify-content: center;
+      padding-bottom: 50vh;
+      /* position: absolute;
+    right: 4vw;
+    top: 5px; */
+    }
+
+    #exitOverlay p,
+    #exitOverlayFrench p {
+      border-bottom: 2px solid;
+    }
+
+    #english-nav {
+      font-family: "helvetica";
+    }
+
+    #androidFrench {
+      /* background-color: white;
+    z-index: 9999999999999;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    padding:4vw;
+
+    opacity:0; */
+    }
+
+    #eoaf {
+      font-size: 30px;
+    }
+
+    #androidFrench .overlay-inner {
+      /* padding:4vw; */
+    }
+
+    #exitOverlay,
+    #exitOverlayFrench,
+    #exitA,
+    #exitAF {
+      font-size: 15px;
+      font-family: "helvetica";
+      padding-top: 4vw;
+      /* border-bottom:2px solid; */
+      font-weight: bold;
+      display: flex;
+      justify-content: center;
+      padding-bottom: 50vh;
+
+    }
+
+    #exitOverlay p,
+    #exitOverlayFrench p,
+    #exitA p,
+    #exitAF p {
+      border-bottom: 2px solid;
+    }
+
+
+    #english-nav {
+      font-family: "helvetica";
+    }
+
+    #eoa {
+      font-size: 30px;
+    }
+
+    /* #android #french-nav {
+      
+    display: flex;
+    width: 100%;
+    height: 5vh;
+    justify-content: space-between;
+
+    }
+
+    #androidFrench #english-nav {
+      display: flex;
+    width: 100%;
+    height: 5vh;
+    justify-content: space-between;
+    } */
+
+    #android,
+    #androidFrench {
+      /* display:block; */
+      position: absolute;
+      z-index: 999999999;
+      top: 0;
+      bottom: 0;
+      right: 0;
+      left: 0;
+      /* height:100%;
+      width:100%; */
+      background: white;
+      color: black;
+      padding: 4vw;
+      font-family: "helvetica" !important;
+
+
+    }
+
+    /* #frenchDropdown.show {
+      visibility: visible;
+
+    }
+
+    
+
+    #no-support.show {
+      display:flex ;
+    } */
+    /* 
+.path {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: dash 5s linear alternate infinite;
+}
+
+@keyframes dash {
+  from {
+    stroke-dashoffset: 1000;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+} */
+    #anime-demo {
+      position: relative;
+    }
+
+    /* .path {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: dash 5s linear alternate infinite;
+}
+
+@keyframes dash {
+  from {
+    stroke-dashoffset: 1000;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+} */
+    #loadingCircles {
+      position: absolute;
+      /* top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0; */
+      /* display: none; */
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #camera_hide {
+      display:none !important;
+    }
+
+    /* .a-enter-vr-button {  top: -10px; } */
+  </style>
+  <!-- <script>
+    window.setInterval(() => {
+      fetch(OUR_URL.SERVER_HOST + "/api/videos/checkuservideohash/", {
+        method: "POST",
+        body: JSON.stringify({ hash: videoHash, userId: userId, accessToken: accessToken }),
+        mode: "cors",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }).then((response) => {
+        return response.json();
+      }).then((response) => {
+        console.log('this dang problem212312313', response.sources);
+        if (!response.sources) {
+          window.location.href = OUR_URL.LANDING_PAGE;
+        }
+      })
+    }, 30000)
+  </script> -->
+</head>
+
+<body>
+  <!-- <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-W48MX2X"
+      height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <script src="https://cdn.jsdelivr.net/npm/mobile-detect@1.4.3/mobile-detect.min.js"></script> -->
+  <!-- Use components defined in separate files. -->
+  <script type='text/javascript' src="./dist/constants/generalConstants.js"></script>
+  <script type='text/javascript' src="./dist/constants/url.js"></script>
+  <script type='text/javascript' src="./dist/aframeComponents.js"></script>
+  <script type='text/javascript' src="./dist/functions/getDeviceType.js"></script>
+  <script type='text/javascript' src="./dist/functions/AframeDOMManipulation.js"></script>
+  <script type='text/javascript' src="./dist/aframe-video-controls2.js"></script>
+  <script type='text/javascript' src='./dist/sha256.min.js'></script>
+  <script src='./dist/functions/instructions.js'></script>
+
+
+
+  <script>
+    let currentDeviceType = STRINGS.NOT_AVAILABLE
+    let vrHeadsetName = STRINGS.NOT_AVAILABLE
+    let deviceDataFetched = false
+    let currentVideoSource = ''
+    let leftControllerTag;
+    let rightControllerTag;
+    let currentLanguage="LANGUAGES.ENGLISH"
+
+
+    // console.log('currentPlatform', currentDeviceType)
+    let determineDeviceType = async () => {
+      currentDeviceType = await getDeviceType()
+      currentDeviceType === DEVICE_TYPES.VR_HEADSET ? vrHeadsetName = await getVRHeadset() : null
+      // console.log('currentPlatform', currentDeviceType)
+      // console.log('vrHeadsetName', vrHeadsetName)
+      deviceDataFetched = true
+    }
+    determineDeviceType()
+  </script>
+
+  <script>
+
+    let i = 0;
+    let movingTimer = 0;
+    let notMovingTimer = 0;
+    let initialX = 0;
+    let initialY = 0;
+    // AFRAME.registerComponent("play-on-focus", {
+    //   schema: {
+    //     color: { default: "red" }
+    //   },
+    //   init: function () {
+    //     let vid = document.getElementById("video");
+    //     // var vid = videojs('video');
+    //     let data = this.data;
+    //     let el = this.el;
+    //   }
+    // });
+    // AFRAME.registerComponent("controls-appear", {
+    //   init: function () {
+    //     let el = this.el;
+    //     let data = this.data;
+    //     let controlbar = document.getElementById("controls");
+    //     let cursor = document.getElementById("cursorToggle");
+    //     el.addEventListener("mouseenter", function () {
+    //       // console.log("Enter");
+    //       cursor.setAttribute("visible", "true");
+    //       controlbar.setAttribute("visible", "true");
+    //       // controlbar.setAttribute('controls-clean-up', '');
+    //     });
+    //     el.addEventListener("mouseleave", function () {
+    //       // console.log("Leave");
+    //       // cursor.setAttribute("visible", "false");
+    //       controlbar.setAttribute("visible", "false");
+    //     });
+    // document.getElementById('control-plane').addEventListener('mouseleave', () => {
+    //   console.log('control plane')
+    //   for (i = 1; i < controlbar.childElementCount; ++i) {
+    //     // console.log(controlbar.children[i]);
+    //     controlbar.children[i].removeAttribute('class')
+    //   }
+    //   document.getElementById('controls').removeEventListener('mouseenter', () => {
+    //     console.log('removing hahahahah');
+    //   })
+    // })
+    // }
+    // });
+
+    AFRAME.registerComponent('sphere-activate', {
+      init: function () {
+        let controlbar = document.getElementById("controls");
+        let cursor = document.getElementById("cursorToggle");
+        this.el.addEventListener('mouseenter', function () {
+          cursor.setAttribute('visible', 'true');
+        })
+        this.el.addEventListener('mouseleave', function () {
+          cursor.setAttribute('visible', 'false');
+          document.getElementById('tl-ring').removeAttribute('tl-ring-animation');
+          document.getElementById('tr-ring').removeAttribute('tr-ring-animation');
+          document.getElementById('br-ring').removeAttribute('br-ring-animation');
+          document.getElementById('bl-ring').removeAttribute('bl-ring-animation');
+          document.getElementById('tl-ring').setAttribute('theta-length', '0.05');
+          document.getElementById('tr-ring').setAttribute('theta-length', '0.05');
+          document.getElementById('bl-ring').setAttribute('theta-length', '0.05');
+          document.getElementById('br-ring').setAttribute('theta-length', '0.05');
+          document.getElementById('tl-ring').setAttribute('color', 'black');
+          document.getElementById('tr-ring').setAttribute('color', 'black');
+          document.getElementById('bl-ring').setAttribute('color', 'black');
+          document.getElementById('br-ring').setAttribute('color', 'black');
+        })
+        this.el.addEventListener("click", function () {
+          // console.log('hehe');
+          controlbar.setAttribute('visible', 'true');
+          // document.getElementById('control-plane').setAttribute('visible', 'true');
+          // document.querySelector('a-scene').components.screenshot.capture('perspective')
+          for (i = 1; i < controlbar.childElementCount; ++i) {
+            // console.log(controlbar.children[i]);
+            controlbar.children[i].setAttribute('class', 'clickable')
+          }
+          controlbar.setAttribute('dynamic-ring', '');
+        });
+        this.el.addEventListener('fusing', function () {
+          document.getElementById('tl-ring').setAttribute('tl-ring-animation', '');
+        });
+      }
+    });
+
+    AFRAME.registerComponent('dynamic-ring', {
+      init: function () {
+        // document.getElementById('controls').children[4].addEventListener('fusing', () => {
+        //   // console.log('fusigegegegegegege');
+        //   // document.getElementById('cursorToggle').setAttribute('cursor-animation', '');
+        //   // let position = new THREE.Vector3();
+        //   // document.getElementById('controls').children[4].object3D.getWorldPosition(position);
+        //   // console.log(position);
+        //   // document.getElementById('play-ring').object3D.position.set(position.x, position.y, position.z)
+        //   // document.getElementById('play-ring').setAttribute('play-ring-animation', '');
+        //   // document.getElementById('play-ring').setAttribute('scale', '0.3 0.3 0.3');
+        // })
+        document.getElementById('controls').children[6].addEventListener('mouseleave', () => {
+          document.getElementById('play-ring').removeAttribute('play-ring-animation');
+          document.getElementById('play-ring').setAttribute('theta-length', '0.05');
+        })
+        document.getElementById('controls').children[4].addEventListener('fusing', () => {
+          let position = new THREE.Vector3();
+          document.getElementById('controls').children[4].object3D.getWorldPosition(position);
+          // console.log('2');
+          // console.log(position);
+          document.getElementById('play-ring').object3D.position.set(position.x, position.y, position.z)
+          document.getElementById('play-ring').setAttribute('scale', '0.75 0.75 0.75')
+          document.getElementById('play-ring').setAttribute('play-ring-animation', '');
+        })
+        document.getElementById('controls').children[4].addEventListener('mouseleave', () => {
+          document.getElementById('play-ring').removeAttribute('play-ring-animation');
+          document.getElementById('play-ring').setAttribute('theta-length', '0.05');
+        })
+        document.getElementById('controls').children[5].addEventListener('fusing', () => {
+          let position = new THREE.Vector3();
+          document.getElementById('controls').children[5].object3D.getWorldPosition(position);
+          // console.log('3');
+          // console.log(position);
+          document.getElementById('play-ring').object3D.position.set(position.x, position.y, position.z)
+          document.getElementById('play-ring').setAttribute('scale', '0.75 0.75 0.75')
+          document.getElementById('play-ring').setAttribute('play-ring-animation', '');
+        })
+        document.getElementById('controls').children[5].addEventListener('mouseleave', () => {
+          document.getElementById('play-ring').removeAttribute('play-ring-animation');
+          document.getElementById('play-ring').setAttribute('theta-length', '0.05');
+        })
+        document.getElementById('controls').children[7].addEventListener('fusing', () => {
+          let position = new THREE.Vector3();
+          document.getElementById('controls').children[7].object3D.getWorldPosition(position);
+          // console.log('5');
+          // console.log(position);
+          document.getElementById('play-ring').object3D.position.set(position.x, position.y, position.z)
+          document.getElementById('play-ring').setAttribute('play-ring-animation', '');
+          document.getElementById('play-ring').setAttribute('scale', '0.75 0.75 0.75')
+        })
+        document.getElementById('controls').children[7].addEventListener('mouseleave', () => {
+          document.getElementById('play-ring').removeAttribute('play-ring-animation');
+          document.getElementById('play-ring').setAttribute('theta-length', '0.05');
+        })
+        document.getElementById('controls').children[8].addEventListener('fusing', () => {
+          let position = new THREE.Vector3();
+          document.getElementById('controls').children[8].object3D.getWorldPosition(position);
+          // console.log('6');
+          // console.log(position);
+          document.getElementById('play-ring').object3D.position.set(position.x, position.y, position.z)
+          document.getElementById('play-ring').setAttribute('scale', '0.75 0.75 0.75')
+          document.getElementById('play-ring').setAttribute('play-ring-animation', '');
+        })
+        document.getElementById('controls').children[8].addEventListener('mouseleave', () => {
+          document.getElementById('play-ring').removeAttribute('play-ring-animation');
+          document.getElementById('play-ring').setAttribute('theta-length', '0.05');
+        })
+        document.getElementById('controls').children[9].addEventListener('fusing', () => {
+          let position = new THREE.Vector3();
+          document.getElementById('controls').children[9].object3D.getWorldPosition(position);
+          // console.log('7');
+          // console.log(position);
+          document.getElementById('play-ring').object3D.position.set(position.x, position.y, position.z)
+          document.getElementById('play-ring').setAttribute('scale', '0.75 0.75 0.75')
+          document.getElementById('play-ring').setAttribute('play-ring-animation', '');
+        })
+        document.getElementById('controls').children[9].addEventListener('mouseleave', () => {
+          document.getElementById('play-ring').removeAttribute('play-ring-animation');
+          document.getElementById('play-ring').setAttribute('theta-length', '0.05');
+        })
+        document.getElementById('controls').children[10].addEventListener('fusing', () => {
+          let position = new THREE.Vector3();
+          document.getElementById('controls').children[10].object3D.getWorldPosition(position);
+          // console.log('8');
+          // console.log(position);
+          document.getElementById('play-ring').object3D.position.set(position.x, position.y, position.z)
+          document.getElementById('play-ring').setAttribute('scale', '0.75 0.75 0.75')
+          document.getElementById('play-ring').setAttribute('play-ring-animation', '');
+        })
+        document.getElementById('controls').children[10].addEventListener('mouseleave', () => {
+          document.getElementById('play-ring').removeAttribute('play-ring-animation');
+          document.getElementById('play-ring').setAttribute('theta-length', '0.05');
+        })
+
+        document.getElementById('controls').children[11].addEventListener('fusing', () => {
+          let position = new THREE.Vector3();
+          document.getElementById('controls').children[11].object3D.getWorldPosition(position);
+          // console.log('8');
+          // console.log(position);
+          document.getElementById('play-ring').object3D.position.set(position.x, position.y, position.z)
+          document.getElementById('play-ring').setAttribute('scale', '0.75 0.75 0.75')
+          document.getElementById('play-ring').setAttribute('play-ring-animation', '');
+        })
+        document.getElementById('controls').children[11].addEventListener('mouseleave', () => {
+          document.getElementById('play-ring').removeAttribute('play-ring-animation');
+          document.getElementById('play-ring').setAttribute('theta-length', '0.05');
+        })
+        // document.getElementById('controls').children[9].addEventListener('fusing', () => {
+        //   let position = new THREE.Vector3();
+        //   document.getElementById('controls').children[9].object3D.getWorldPosition(position);
+        //   console.log(position);
+        //   document.getElementById('play-ring').object3D.position.set(position.x, position.y, position.z)
+        //   document.getElementById('play-ring').setAttribute('play-ring-animation', '');
+        // })
+        // document.getElementById('controls').children[9].addEventListener('mouseleave', () => {
+        //   document.getElementById('play-ring').removeAttribute('play-ring-animation');
+        //   document.getElementById('play-ring').setAttribute('theta-length', '0');
+        // })
+      },
+      remove: function () {
+        document.getElementById('controls').children[4].removeEventListener('fusing', () => { });
+        document.getElementById('controls').children[5].removeEventListener('fusing', () => { });
+        document.getElementById('controls').children[7].removeEventListener('fusing', () => { });
+        document.getElementById('controls').children[8].removeEventListener('fusing', () => { });
+        document.getElementById('controls').children[9].removeEventListener('fusing', () => { });
+        document.getElementById('controls').children[10].removeEventListener('fusing', () => { });
+        document.getElementById('controls').children[11].removeEventListener('fusing', () => { });
+        // document.getElementById('controls').children[9].removeEventListener('fusing', () => { });
+      }
+    });
+    AFRAME.registerComponent('intersect', {
+      init: function () {
+        let controlbar = document.getElementById("controls");
+        let cursor = document.getElementById("cursorToggle");
+        this.el.addEventListener('raycaster-intersected', (evt) => {
+          // console.log('intersect', evt);
+          if (controlbar.children[3].getAttribute('class') == 'clickable') {
+            cursor.setAttribute('visible', 'true');
+            controlbar.setAttribute('visible', 'true');
+            // console.log(evt);
+          }
+        })
+        // this.el.addEventListener('raycaster-intersected-cleared', (evt) => {
+        //   controlbar.setAttribute('visible', 'false');
+        //   cursor.setAttribute('visible', 'false');
+        //   console.log('clearrrrrrrr', evt)
+        //   for (i = 1; i < controlbar.childElementCount; ++i) {
+        //     // console.log(controlbar.children[i]);
+        //     controlbar.children[i].removeAttribute('class', 'clickable')
+        //   }
+        //   controlbar.removeAttribute('dynamic-ring');
+        //   document.getElementById('play-ring').removeAttribute('play-ring-animation');
+        //   document.getElementById('play-ring').setAttribute('theta-length', '0');
+        //   this.el.removeEventListener('mouseenter', () => {
+
+        //   })
+        // });
+      }
+    });
+
+    AFRAME.registerComponent('tl-ring-animation', {
+      init: function () {
+        // document.getElementById('cursorToggle').setAttribute('visible', 'false');
+        this.el.setAttribute('animation', 'property: theta-length; to: 360; easing: easeInQuad; dur: 250; delay: 300');
+        this.el.addEventListener('animationcomplete', () => {
+          this.el.removeAttribute('tl-ring-animation');
+          this.el.setAttribute('color', 'cyan');
+          document.getElementById('tr-ring').setAttribute('tr-ring-animation', '');
+        });
+      },
+      remove: function () {
+        this.el.removeAttribute('animation');
+      }
+    });
+    AFRAME.registerComponent('tr-ring-animation', {
+      init: function () {
+        this.el.setAttribute('animation', 'property: theta-length; to: 360; easing: easeInQuad; dur: 250;');
+        this.el.addEventListener('animationcomplete', () => {
+          this.el.removeAttribute('tr-ring-animation');
+          this.el.setAttribute('color', 'cyan');
+          document.getElementById('br-ring').setAttribute('br-ring-animation', '');
+        });
+      },
+      remove: function () {
+        this.el.removeAttribute('animation');
+      }
+    });
+    AFRAME.registerComponent('br-ring-animation', {
+      init: function () {
+        this.el.setAttribute('animation', 'property: theta-length; to: 360; easing: easeInQuad; dur: 250;');
+        this.el.addEventListener('animationcomplete', () => {
+          this.el.removeAttribute('br-ring-animation');
+          this.el.setAttribute('color', 'cyan');
+          document.getElementById('bl-ring').setAttribute('bl-ring-animation', '');
+        });
+      },
+      remove: function () {
+        this.el.removeAttribute('animation');
+      }
+    });
+    AFRAME.registerComponent('bl-ring-animation', {
+      init: function () {
+        this.el.setAttribute('animation', 'property: theta-length; to: 360; easing: easeInQuad; dur: 250;');
+        this.el.addEventListener('animationcomplete', () => {
+          this.el.removeAttribute('bl-ring-animation');
+          this.el.setAttribute('color', 'cyan');
+          window.setTimeout(() => {
+            document.getElementById('tl-ring').setAttribute('theta-length', '0.05');
+            document.getElementById('tr-ring').setAttribute('theta-length', '0.05');
+            document.getElementById('bl-ring').setAttribute('theta-length', '0.05');
+            document.getElementById('br-ring').setAttribute('theta-length', '0.05');
+            document.getElementById('tl-ring').setAttribute('color', 'black');
+            document.getElementById('tr-ring').setAttribute('color', 'black');
+            document.getElementById('bl-ring').setAttribute('color', 'black');
+            document.getElementById('br-ring').setAttribute('color', 'black');
+            document.getElementById('controls').setAttribute('visible', 'true');
+            // document.getElementById('box-2').setAttribute('fade-in', '');
+          }, 100)
+        });
+      },
+      remove: function () {
+        this.el.removeAttribute('animation');
+      }
+    });
+    AFRAME.registerComponent('play-ring-animation', {
+      init: function () {
+        this.el.setAttribute('animation', 'property: theta-length; to: 360; easing: easeInQuad; dur: 1300;');
+        this.el.addEventListener('animationcomplete', () => {
+          this.el.setAttribute('theta-length', '0.05');
+          this.el.removeAttribute('play-ring-animation');
+        })
+      },
+      remove: function () {
+        this.el.removeAttribute('animation');
+      }
+    })
+    AFRAME.registerComponent('the3-animation', {
+      init: function () {
+        this.el.setAttribute('position', '0 0 -3');
+        this.el.setAttribute('animation', 'property: opacity; from: 1.0; to: 0.0; easing: easeInQuad; dur: 1000');
+        this.el.addEventListener('animationcomplete', () => {
+          this.el.removeAttribute('the3-animation');
+          document.getElementById('the2').setAttribute('the2-animation', '');
+          // console.log('done!');
+        })
+      },
+      remove: function () {
+        this.el.removeAttribute('animation');
+        this.el.setAttribute('position', '0 0 -6');
+      }
+    })
+    AFRAME.registerComponent('the2-animation', {
+      init: function () {
+        this.el.setAttribute('position', '0 0 -3');
+        this.el.setAttribute('animation', 'property: opacity; from: 1.0; to: 0.0; easing: easeInQuad; dur: 1000');
+        this.el.addEventListener('animationcomplete', () => {
+          this.el.removeAttribute('the2-animation');
+          document.getElementById('the1').setAttribute('the1-animation', '');
+          // console.log('done!');
+        })
+      },
+      remove: function () {
+        this.el.removeAttribute('animation');
+        this.el.setAttribute('position', '0 0 -6');
+      }
+    })
+    AFRAME.registerComponent('the1-animation', {
+      init: function () {
+        this.el.setAttribute('position', '0 0 -3');
+        this.el.setAttribute('animation', 'property: opacity; from: 1.0; to: 0.0; easing: easeInQuad; dur: 1000');
+        this.el.addEventListener('animationcomplete', () => {
+          this.el.removeAttribute('the1-animation');
+          // console.log('done!');
+        })
+      },
+      remove: function () {
+        this.el.setAttribute('position', '0 0 -6');
+        this.el.removeAttribute('animation');
+      }
+    })
+
+    AFRAME.registerComponent('camera-reader', {
+      tick: function () {
+        ++i;
+        if (i >= 5) {
+          i = 0;
+          let position = new THREE.Vector3();
+          let rotation = new THREE.Euler();
+          // sphere is a hidden object used to help determine the direction user is facing
+          // camera rotation also helps determine the direction the user is facing
+          position = document.getElementById('sphere').object3D.getWorldPosition(position);
+          rotation = document.getElementById('camera').object3D.rotation;
+          //   let playPosition = new THREE.Vector3();
+          //   playPosition = document.getElementById('controls').children[2].object3D.getWorldPosition(playPosition);
+          // console.log(position);
+          // mod 2PI to determine which way the user is facing. modulo because the rotation keeps adding up, e.g. 2 full circle is 4PI.
+          // positive and negative are both separate cases, depending on which direction the user turns.
+          // positive when turning left, negative when turning right
+          let rotationMod = rotation.y % (2 * Math.PI);
+          // console.log(rotationMod);
+          let x_set = -1
+          let z_set = Math.sqrt(29 - (x_set * x_set));
+          let menuActivate_y = 4;
+          let menuActivate_z = 4;
+          let angle_set = Math.atan(x_set / z_set);
+          // Dealing with + angles
+          if (rotationMod >= 0) {
+            // console.log('positive');
+            // Front, angle smaller than 45deg or PI/4, or angle bigger than 315deg or 7PI/4
+            if (rotationMod <= Math.PI / 4 || rotationMod > 7 * Math.PI / 4) {
+              // console.log('in the front');
+              document.getElementById('controls').object3D.position.set(0, -x_set, -z_set);   // position is set to a fixed distance
+              // the order of rotation matters
+              document.getElementById('controls').object3D.rotation.order = 'ZYX';
+              document.getElementById('controls').object3D.rotation.set(angle_set, 0, 0);
+              // document.getElementById('play-ring').object3D.position.set(playPosition.x, playPosition.y, playPosition.z);
+              document.getElementById('play-ring').object3D.rotation.order = 'ZYX';
+              document.getElementById('play-ring').object3D.rotation.set(angle_set, 0, 0);
+              if (position.z >= -1.5 && position.z <= 2) { // when user is looking down, position the ball
+                // document.getElementById('menu-sphere').object3D.position.set(0, -7, -1.5);
+                // document.getElementById('lolgo').object3D.position.set(0, -menuActivate_y, -menuActivate_z);
+                // document.getElementById('lolgo').object3D.rotation.set(-Math.atan(menuActivate_y / menuActivate_z), 0, 0);
+              }
+            } else if (rotationMod <= 3 * Math.PI / 4 && rotationMod > Math.PI / 4) {
+              // console.log('in the left');
+              document.getElementById('controls').object3D.position.set(-z_set, -x_set, 0);
+              document.getElementById('controls').object3D.rotation.order = 'ZYX';
+              document.getElementById('controls').object3D.rotation.set(0, Math.PI / 2, -angle_set);
+              // document.getElementById('play-ring').object3D.position.set(playPosition.x, playPosition.y, playPosition.z);
+              document.getElementById('play-ring').object3D.rotation.order = 'ZYX';
+              document.getElementById('play-ring').object3D.rotation.set(0, Math.PI / 2, -angle_set);
+              if (position.x >= -1.5 && position.x <= 2) {
+                // document.getElementById('menu-sphere').object3D.position.set(-1.5, -7, 0);
+                // document.getElementById('lolgo').object3D.position.set(-menuActivate_z, -menuActivate_y, 0);
+                // document.getElementById('lolgo').object3D.rotation.order = 'ZYX'
+                // document.getElementById('lolgo').object3D.rotation.set(-Math.atan(menuActivate_y / menuActivate_z), Math.PI / 2, 0);
+              }
+            } else if (rotationMod <= 5 * Math.PI / 4 && rotationMod > 3 * Math.PI / 4) {
+              // console.log('in the back');
+              document.getElementById('controls').object3D.position.set(0, -x_set, z_set);
+              document.getElementById('controls').object3D.rotation.order = 'XYZ';
+              document.getElementById('controls').object3D.rotation.set(-angle_set, Math.PI, 0);
+              // document.getElementById('play-ring').object3D.position.set(playPosition.x, playPosition.y, playPosition.z);
+              document.getElementById('play-ring').object3D.rotation.order = 'XYZ';
+              document.getElementById('play-ring').object3D.rotation.set(-angle_set, Math.PI, 0);
+              if (position.z >= -2 && position.z <= 1.5) {
+                // document.getElementById('menu-sphere').object3D.position.set(0, -7, 1.5);
+                // document.getElementById('lolgo').object3D.position.set(0, -menuActivate_y, menuActivate_z);
+                // document.getElementById('lolgo').object3D.rotation.order = 'ZYX'
+                // document.getElementById('lolgo').object3D.rotation.set(-Math.atan(menuActivate_y / menuActivate_z), Math.PI, 0);
+              }
+            } else if (rotationMod <= 7 * Math.PI / 4 && rotationMod > 5 * Math.PI / 4) {
+              // console.log('in the right');
+              document.getElementById('controls').object3D.position.set(z_set, -x_set, 0);
+              document.getElementById('controls').object3D.rotation.order = 'ZYX';
+              document.getElementById('controls').object3D.rotation.set(0, -Math.PI / 2, angle_set);
+              // document.getElementById('play-ring').object3D.position.set(playPosition.x, playPosition.y, playPosition.z);
+              document.getElementById('play-ring').object3D.rotation.order = 'ZYX';
+              document.getElementById('play-ring').object3D.rotation.set(0, -Math.PI / 2, angle_set);
+              if (position.x >= -2 && position.x <= 1.5) {
+                // document.getElementById('menu-sphere').object3D.position.set(1.5, -7, 0);
+                // document.getElementById('lolgo').object3D.position.set(menuActivate_z, -menuActivate_y, 0);
+                // document.getElementById('lolgo').object3D.rotation.order = 'ZYX'
+                // document.getElementById('lolgo').object3D.rotation.set(-Math.atan(menuActivate_y / menuActivate_z), -Math.PI / 2, 0);
+              }
+            }
+          } else if (rotationMod < 0) {
+            // console.log('negative');
+            rotationMod = Math.abs(rotationMod);
+            if (rotationMod <= Math.PI / 4 || rotationMod > 7 * Math.PI / 4) {
+              // console.log('in the front');
+              document.getElementById('controls').object3D.position.set(0, -x_set, -z_set);
+              document.getElementById('controls').object3D.rotation.order = 'ZYX';
+              document.getElementById('controls').object3D.rotation.set(angle_set, 0, 0);
+              // document.getElementById('play-ring').object3D.position.set(playPosition.x, playPosition.y, playPosition.z);
+              document.getElementById('play-ring').object3D.rotation.order = 'ZYX';
+              document.getElementById('play-ring').object3D.rotation.set(angle_set, 0, 0);
+              if (position.z >= -1.5 && position.z <= 2) {
+                // document.getElementById('menu-sphere').object3D.position.set(0, -7, -1.5);
+                // document.getElementById('lolgo').object3D.position.set(0, -menuActivate_y, -menuActivate_z);
+                // document.getElementById('lolgo').object3D.rotation.set(-Math.atan(menuActivate_y / menuActivate_z), 0, 0);
+              }
+            } else if (rotationMod <= 3 * Math.PI / 4 && rotationMod > Math.PI / 4) {
+              // console.log('in the right');
+              document.getElementById('controls').object3D.position.set(z_set, -x_set, 0);
+              document.getElementById('controls').object3D.rotation.order = 'ZYX';
+              document.getElementById('controls').object3D.rotation.set(0, -Math.PI / 2, angle_set);
+              // document.getElementById('play-ring').object3D.position.set(playPosition.x, playPosition.y, playPosition.z);
+              document.getElementById('play-ring').object3D.rotation.order = 'ZYX';
+              document.getElementById('play-ring').object3D.rotation.set(0, -Math.PI / 2, angle_set);
+              if (position.x >= -2 && position.x <= 1.5) {
+                // document.getElementById('menu-sphere').object3D.position.set(1.5, -7, 0);
+                // document.getElementById('lolgo').object3D.position.set(menuActivate_z, -menuActivate_y, 0);
+                // document.getElementById('lolgo').object3D.rotation.order = 'ZYX'
+                // document.getElementById('lolgo').object3D.rotation.set(-Math.atan(menuActivate_y / menuActivate_z), -Math.PI / 2, 0);
+              }
+            } else if (rotationMod <= 5 * Math.PI / 4 && rotationMod > 3 * Math.PI / 4) {
+              // console.log('in the back');
+              document.getElementById('controls').object3D.position.set(0, -x_set, z_set);
+              document.getElementById('controls').object3D.rotation.order = 'XYZ';
+              document.getElementById('controls').object3D.rotation.set(-angle_set, Math.PI, 0);
+              // document.getElementById('play-ring').object3D.position.set(playPosition.x, playPosition.y, playPosition.z);
+              document.getElementById('play-ring').object3D.rotation.order = 'XYZ';
+              document.getElementById('play-ring').object3D.rotation.set(-angle_set, Math.PI, 0);
+              if (position.z >= -2 && position.z <= 1.5) {
+                // document.getElementById('menu-sphere').object3D.position.set(0, -7, 1.5);
+                // document.getElementById('lolgo').object3D.position.set(0, -menuActivate_y, menuActivate_z);
+                // document.getElementById('lolgo').object3D.rotation.order = 'ZYX'
+                // document.getElementById('lolgo').object3D.rotation.set(-Math.atan(menuActivate_y / menuActivate_z), Math.PI, 0);
+              }
+            } else if (rotationMod <= 7 * Math.PI / 4 && rotationMod > 5 * Math.PI / 4) {
+              // console.log('in the left');
+              document.getElementById('controls').object3D.position.set(-z_set, -x_set, 0);
+              document.getElementById('controls').object3D.rotation.order = 'ZYX';
+              document.getElementById('controls').object3D.rotation.set(0, Math.PI / 2, -angle_set);
+              // document.getElementById('play-ring').object3D.position.set(playPosition.x, playPosition.y, playPosition.z);
+              document.getElementById('play-ring').object3D.rotation.order = 'ZYX';
+              document.getElementById('play-ring').object3D.rotation.set(0, Math.PI / 2, -angle_set);
+              if (position.x >= -1.5 && position.x <= 2) {
+                // document.getElementById('menu-sphere').object3D.position.set(-1.5, -7, 0);
+                // document.getElementById('lolgo').object3D.position.set(-menuActivate_z, -menuActivate_y, 0);
+                // document.getElementById('lolgo').object3D.rotation.order = 'ZYX'
+                // document.getElementById('lolgo').object3D.rotation.set(-Math.atan(menuActivate_y / menuActivate_z), Math.PI / 2, 0);
+              }
+            }
+          }
+          initialX = this.el.object3D.rotation.x;
+          initialY = this.el.object3D.rotation.y;
+        }
+      }
+    });
+    AFRAME.registerComponent("controllerinput", {
+      init: function () {
+        this.el.addEventListener("trackpaddown", (event) => {
+          // console.log("oculus clicked!!!!!");
+          // console.log('event trackpaddown', event)
+          // console.log('controller hand clicked', this.el.getAttribute('laser-controls').hand)
+          // console.log('current cursor hand', document.getElementById('cursorToggle').getAttribute('laser-controls').hand)
+          // console.log('is correct hand?', this.el.getAttribute('laser-controls').hand !== document.getElementById('cursorToggle').getAttribute('laser-controls').hand)
+          if (this.el.getAttribute('laser-controls').hand !== document.getElementById('cursorToggle').getAttribute('laser-controls').hand) {
+            // console.log('changing controls hand')
+            let handUsed = this.el.getAttribute('laser-controls').hand
+            // console.log('hand used', handUsed)
+            setControllerHand(handUsed)
+          } else {
+            if (this.el.getAttribute("line").opacity === 1) {
+              // console.log('before deactivate controls function')
+              deactivateControls()
+              deactivateRaycaster()
+            } else {
+              // console.log('before activate controls function')
+              activateControls()
+              activateRaycaster()
+            }
+          }
+        });
+        this.el.addEventListener("gripdown", (event) => {
+          // console.log("oculus clicked!!!!!");
+          // console.log('event gripdown', event)
+          // console.log(
+          //   'this.el.getAttribute("line")',
+          //   this.el.getAttribute("line").opacity
+          // );
+
+          // console.log('controller hand clicked', this.el.getAttribute('laser-controls').hand)
+          // console.log('current cursor hand', document.getElementById('cursorToggle').getAttribute('laser-controls').hand)
+          // console.log('is correct hand?', this.el.getAttribute('laser-controls').hand !== document.getElementById('cursorToggle').getAttribute('laser-controls').hand)
+          if (this.el.getAttribute('laser-controls').hand !== document.getElementById('cursorToggle').getAttribute('laser-controls').hand) {
+            // console.log('changing controls hand')
+            let handUsed = this.el.getAttribute('laser-controls').hand
+            // console.log('hand used', handUsed)
+            setControllerHand(handUsed)
+          } else {
+            if (this.el.getAttribute("line").opacity === 1) {
+              // console.log('before deactivate controls function')
+              deactivateControls()
+              deactivateRaycaster()
+            } else {
+              // console.log('before activate controls function')
+              activateControls()
+              activateRaycaster()
+            }
+          }
+        });
+      }
+    });
+
+    AFRAME.registerComponent('only-show-cursor',{
+    init:function(){
+      let cursor = document.getElementById("cursorToggle");
+      this.el.addEventListener('mouseenter', function () {
+        console.log('mouse entered instructions panel',this.el)
+        cursor.setAttribute('visible', 'true');
+      })
+      this.el.addEventListener('mouseleave', function () {
+        console.log('mouse leave instructions panel',this.el)
+
+        cursor.setAttribute('visible', 'false');
+      })
+      
+    }
+  })
+
+  AFRAME.registerComponent('enable-cursor',{
+    init:function(){
+      let cursor = document.getElementById("cursorToggle");
+      this.el.addEventListener('mouseenter', function () {
+        console.log('mouse entered',this.el)
+        cursor.setAttribute('visible', 'true');
+      })
+      this.el.addEventListener('mouseleave', function () {
+        cursor.setAttribute('visible', 'false');
+        document.getElementById('tl-ring').removeAttribute('tl-ring-animation');
+        document.getElementById('tr-ring').removeAttribute('tr-ring-animation');
+        document.getElementById('br-ring').removeAttribute('br-ring-animation');
+        document.getElementById('bl-ring').removeAttribute('bl-ring-animation');
+        document.getElementById('tl-ring').setAttribute('theta-length', '0.05');
+        document.getElementById('tr-ring').setAttribute('theta-length', '0.05');
+        document.getElementById('bl-ring').setAttribute('theta-length', '0.05');
+        document.getElementById('br-ring').setAttribute('theta-length', '0.05');
+        document.getElementById('tl-ring').setAttribute('color', 'black');
+        document.getElementById('tr-ring').setAttribute('color', 'black');
+        document.getElementById('bl-ring').setAttribute('color', 'black');
+        document.getElementById('br-ring').setAttribute('color', 'black');
+      })
+      this.el.addEventListener('fusing', function () {
+          console.log('fusing ',this.el)
+        document.getElementById('tl-ring').setAttribute('tl-ring-animation', '');
+      });
+    }
+  })
+
+  </script>
+
+  <a-scene loading-screen="dotsColor: cyan; backgroundColor: black" z-index:9999999999999999999999999999;>
+    <a-entity id="controls" visible="false" video-controls="src:#video; distance: 3; size:4;" material="color: white" scale='0.75 0.75 0.75'>
+      <a-rounded width="1" height="1" radius="0.05" color="white" opacity="0.3" position="-2.5 -3.3 -0.1" scale="5 2.25 1" class="clickable" intersect></a-rounded>
+      <a-text id='currentTime' position='-0.5 -2.2 0' value='' color="black"></a-text>
+      <a-text id='totalTime' position='-0.06 -2.2 0' value='' color="black"></a-text>
+
+      <!-- <a-plane id="control-plane" material="color: white; opacity:0.3;" position="0 -2.2 -0.1" scale="5 2.25 1"
+        class="clickable" intersect></a-plane> -->
+    </a-entity>
+    <a-sphere id="activator-ring" position="0 0 0" radius="4" color="cyan" geometry="theta-start: 130; theta-length: 10"
+      transparency="false" material="side: back; opacity: 0.15" class="clickable" sphere-activate></a-sphere>
+
+    </a-sphere>
+    <a-ring id="play-ring" color="cyan" radius-inner="0.23" radius-outer="0.28" theta-length="0.05" scale='0.75 0.75 0.75'>
+    </a-ring>
+    <a-entity id="camera" camera look-controls mouse-cursor camera-reader>
+      <a-image id="the1" src="./assets/icons8-1st-100.png" position="0 0 -8" material="opacity: 0.0"></a-image>
+      <a-image id="the2" src="./assets/icons8-circled-2-100.png" position="0 0 -8" material="opacity: 0.0"></a-image>
+      <a-image id="the3" src="./assets/icons8-circled-3-100.png" position="0 0 -8" material="opacity: 0.0"></a-image>
+      <a-ring id="tl-ring" color="black" radius-inner="0.1" radius-outer="0.15" theta-length="0.05"
+        position="-0.15 0.15 -10"></a-ring>
+      <a-ring id="tr-ring" color="black" radius-inner="0.1" radius-outer="0.15" theta-length="0.05"
+        position="0.15 0.15 -10"></a-ring>
+      <a-ring id="bl-ring" color="black" radius-inner="0.1" radius-outer="0.15" theta-length="0.05"
+        position="-0.15 -0.15 -10"></a-ring>
+      <a-ring id="br-ring" color="black" radius-inner="0.1" radius-outer="0.15" theta-length="0.05"
+        position="0.15 -0.15 -10"></a-ring>
+      <!-- <a-entity id="dummy-controls" visible="true" video-controls="src:#video; distance: 5; size:4;"></a-entity> -->
+      <a-sphere id="sphere" transparent="true" material="opacity: 0.0" geometry="radius: 0.5" position="0 -2 -2">
+      </a-sphere>
+
+      <a-entity position="0 0 -2.1" geometry="primitive: ring; radiusOuter: 0.060;
+                      radiusInner: 0.050;" material="color: cyan; shader: flat" raycaster="objects: .clickable;"
+        cursor="maxDistance: 30; fuse: true; fuseTimeout: 1300" scale="0.5 0.5 0.5" visible="false" id="cursorToggle"
+        proxy-event__enter="event: mouseenter; to: a-plane; as: foo"
+        proxy-event__leave="event: mouseleave; to: a-plane; as: bar">
+      </a-entity>
+
+      <!-- <a-entity position="0 -1 -3" geometry="primitive: ring; radiusOuter: 0.2; radiusInner: 0.1;" material="color: green" id="boxy"></a-entity> -->
+    </a-entity>
+    <!-- <a-entity position="0 -2 -2" geometry="primitive: ring; radiusOuter: 0.3; radiusInner: 0.2;" material="color: cyan" id="box"></a-entity> -->
+    <a-assets id="assets" timeout="5000">
+      <video id="video" class="video-js vjs-default-skin" preload="auto" crossOrigin="anonymous" width="100%"
+        height="100%" controls playsinline webkit-playsinline allow="gyroscope accelerometer magnetometer">
+      </video>
+      <!-- <img id="logo" src="/assets/lolgo.png" /> -->
+      <img id='upArrow' src='assets/arrowUp.png'>
+      <!-- <svg id="logo" src="/assets/nomads_logo.svg"></svg> -->
+      <script>
+        $(document).ready(function () {
+          function getCookie(name) {
+            // Split cookie string and get all individual name=value pairs in an array
+            var cookieArr = document.cookie.split(";");
+
+            // Loop through the array elements
+            for (var i = 0; i < cookieArr.length; i++) {
+              var cookiePair = cookieArr[i].split("=");
+
+              /* Removing whitespace at the beginning of the cookie name
+          and compare it with the given string */
+              if (name == cookiePair[0].trim()) {
+                // Decode the cookie value and return
+                return decodeURIComponent(cookiePair[1]);
+              }
+            }
+
+            // Return null if not found
+            return null;
+          }
+          const userLogged = getCookie("username");
+          // if (!userLogged) {
+            // window.location.assign(OUR_URL.LANDING_PAGE);
+            //window.location.href = "http://localhost/login.html";
+            //$(location).attr('href', 'http://localhost/login.html');
+          // }
+        });
+      </script>
+      <script>
+        let accessToken = ''
+        function addToAssets() {
+          let assetsTag = document.getElementById("assets");
+          // console.log("assetsTag", assetsTag);
+          let videoIdUrl = window.location.search.slice(1)
+          // console.log('videoIdUr 1!@!@!@l', videoIdUrl)
+          // if (videoIdUrl === '29') {
+          //   // console.log('its 29!!!!!!!')
+          //   loadjscssfile("dist/aframe-video-controls2.js", "js")
+          // } else {
+          //   loadjscssfile("dist/aframe-video-controls2.js", "js")
+          // }
+          // fetch("http://localhost:5000/api/account/addwatchedvideo/", {
+          //   method: "POST",
+          //   body: JSON.stringify({ userId: null, videoLibraryId: videoIdUrl }),
+          //   mode: "cors",
+
+          //   headers: {
+          //     "Content-Type": "application/json"
+          //   }
+          // })
+          //   .then(resp => {
+          //     return resp.json();
+          //   })
+          // TOREPLACE
+          let time = Date.now().toString();
+          accessToken = time + videoHash;
+          accessToken = sha256(accessToken);
+          // let secondsWatched = 0
+          // setInterval(() => {
+          //   fetch(OUR_URL.SERVER_HOST + '/api/videos/lastupdate/?userId='+ userId + '&accessToken=' + accessToken + '&seconds=' + secondsWatched)
+          //   secondsWatched = 0
+          // }, 120000);
+          // setInterval(() => {
+          //   let video = document.getElementById('video')
+          //   if (!video.paused) {
+          //     secondsWatched += 1
+          //   }
+          // }, 1000)
+          // setTimeout(() => {
+          //   window.addEventListener('beforeunload', (e) => {
+          //     console.log(secondsWatched)
+          //     fetch(OUR_URL.SERVER_HOST + "/api/videos/clearuservideohash/?hash=" + videoHash + '&userId=' + userId + '&accessToken=' + accessToken + '&seconds=' + secondsWatched)
+          //   })
+          // }, 500);
+
+          // fetch(OUR_URL.SERVER_HOST + "/api/videos/checkuservideohash/", {
+          //   method: "POST",
+          //   body: JSON.stringify({ hash: videoHash, userId: userId, accessToken: accessToken }),
+          //   mode: "cors",
+          //   headers: {
+          //     "Content-Type": "application/json"
+          //   }
+          // }).then((response) => {
+          //   console.log(response);
+          //   return response.json();
+          // }).then((response) => {
+          //   console.log('this dang problem', response);
+          //   console.log(typeof(response));
+          //   if (!response.sources) {
+          //     console.log("no sources");
+          //     window.location.assign(OUR_URL.LANDING_PAGE);
+          //   }
+            // TOREPLACE
+            // fetch(privateUrl + "/api/videos/videosources/", {
+            //   method: "POST",
+            //   body: JSON.stringify({ hash: videoIdUrl }),
+
+            //   mode: "cors",
+
+            //   headers: {
+            //     "Content-Type": "application/json"
+            //   }
+            // })
+            // .then(resp => {
+            //   return resp.json();
+            // })
+            // .then(response => {
+            // console.log("response", response.sources);
+
+            //will be dash video
+            let source0 = {};
+
+            //will be hls video
+            let source1 = {};
+
+            // response.sources.map(source => {
+            //   if (source.type === "application/dash+xml") {
+            //     source0.src = source.source;
+            //     source0.type = source.type;
+            //   }
+            //   if (source.type === "application/x-mpegURL") {
+            //     source1.src = source.source;
+            //     source1.type = source.type;
+            //   }
+            // });
+            source0.src = 'https://d3foiv3ve2hexh.cloudfront.net/out/v1/c80b00b12f074e6cb80886a31e3d519a/index.m3u8'
+            source0.type= 'application/x-mpegURL'
+            source1.src = 'https://d3foiv3ve2hexh.cloudfront.net/out/v1/c80b00b12f074e6cb80886a31e3d519a/index.m3u8'
+            source1.type= 'application/x-mpegURL'
+            console.log("source0", source0);
+            console.log("source1", source1);
+
+            let videoTag = document.getElementById("video");
+
+            let sourceTag1 = document.createElement("source");
+            sourceTag1.setAttribute("src", source0.src);
+            sourceTag1.setAttribute("type", source0.type);
+
+            let sourceTag2 = document.createElement("source");
+            sourceTag2.setAttribute("src", source1.src);
+            sourceTag2.setAttribute("type", source1.type);
+
+            // videoTag.appendChild(sourceTag1);
+            videoTag.appendChild(sourceTag2);
+            let currentVideoSource = source1
+            // console.log('currentVideoSource', currentVideoSource)
+
+            var hls;
+
+            // console.log('before manifest parsed')
+            //for playing hls
+            // if (Hls.isSupported()) {
+              console.log('playing hls source')
+              hls = new Hls();
+              hls.loadSource(currentVideoSource.src);
+              // hls.loadSource('https://videouploadwork123222.s3.amazonaws.com/Tour_teaser_5k_MK_11072019.m3u8');
+              hls.attachMedia(videoTag);
+              hls.on(Hls.Events.MANIFEST_PARSED, function () {
+                // console.log('Hls.Events.MANIFEST_PARSED');
+                if (currentDeviceType === DEVICE_TYPES.IOS) {
+                  // console.log('playing ios video')
+                  video.play()
+                }
+              });
+              // video.onwaiting = () => {
+              //   try {
+              //     console.log('waiting')
+              //     let saveTime = video.CurrentTime
+              //     let hls = new Hls()
+              //     hls.detachMedia()
+              //     hls.loadSource(video.children[0].src)
+              //     let newSource = document.createElement('source')
+              //     newSource.setAttribute('src', video.children[0].src)
+              //     newSource.setAttribute('type', video.children[0].type)
+              //     video.removeChild(video.childNodes[0])
+              //     video.appendChild(newSource)
+              //     hls.attachMedia(video)
+              //     var promise = video.play()
+              //     if (playPromise !== undefined) {
+              //       playPromise.then(_ => {
+              //         // Automatic playback started!
+              //         // Show playing UI.
+              //       })
+              //       .catch(error => {
+              //         // Auto-play was prevented
+              //         // Show paused UI.
+              //       });
+              //     }
+              //   }catch(e) {
+              //     console.log('error', e)
+              //   }
+              // }
+              video.onloadedmetadata = (event) => {
+                let timeToString = (time) => {
+                  if (time < 60) {
+                    if (time < 10) {
+                      return '0:0' + (parseInt(time).toString());  
+                    }
+                    return '0:' + (parseInt(time).toString());
+                  }
+                  let minutes = parseInt(time/60);
+                  let seconds = (time - (60 * minutes))
+                  if (seconds < 10) {
+                    return minutes + ':0' + parseInt((time - (60 * minutes)))
+                  }
+                  return minutes + ':' + parseInt((time - (60 * minutes)))
+                }
+                let playUpdateInterval = setInterval(() => {
+                  document.getElementById('currentTime').setAttribute('value', timeToString(video.currentTime));
+                }, 1000)
+                document.getElementById('totalTime').setAttribute('value', '/' + timeToString(video.duration))
+              }
+
+
+
+
+
+            // } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+            //   console.log('playing hls source 2???')
+            //   video.src = source1.src;
+            //   // video.src = 'https://videouploadwork123222.s3.amazonaws.com/BH_teaser_Master_STEREO_29_07_19.mpd'
+            //   video.addEventListener("loadedmetadata", function () {
+            //     // console.log('loadedmetadata');
+            //     video.play();
+            //   });
+            // }
+            // videoTag.addEventListener('play',firstPlayVideo)
+
+
+            //restarts the video if it crashes
+
+            videoTag.addEventListener("error", error => {
+              // console.log("error123", error);
+              // console.log('timestamp',error.timeStamp)
+              let currentTime = video.currentTime
+              // console.log('currentTime', currentTime)
+              hls = new Hls()
+              // console.log('loading source')
+              // console.log('currentVideoSource', currentVideoSource.src)
+
+              // hls.loadSource('https://videouploadwork123222.s3.amazonaws.com/converted/multibitrateRoto.m3u8');
+              hls.loadSource(currentVideoSource.src);
+              
+              // console.log('hls', hls)
+              // console.log('attaching media')
+              hls.attachMedia(videoTag)
+              // console.log('hls', hls)
+              hls.on(Hls.Events.MANIFEST_PARSED, function () {
+                // console.log('manifest was parsed')
+                videoTag.currentTime = currentTime - .2
+                videoTag.oncanplay = () => {
+                  // console.log('can play')
+                  // console.log('newTime', videoTag.currentTime)
+                  // console.log('starting play timeout')
+                  setTimeout(() => videoTag.play(), 1000)
+                }
+
+                // console.log('going to play video after reloading')
+                // videoTag.play();
+              });
+            });
+
+          // });
+        }
+
+
+        addToAssets();
+      </script>
+    </a-assets>
+    <!-- <a-entity oculus-touch-controls="hand: left"></a-entity>
+    <a-entity oculus-touch-controls="hand: right"></a-entity> -->
+    <!-- <a-entity camera look-controls
+      orbit-controls="target: 0 1.6 -0.5; minDistance: 0.5; maxDistance: 180; initialPosition: 0 5 15">
+      <a-entity geometry="primitive:cone; radius-bottom:1; radius-top:0" scale="0 0 0" position="0 0 0"
+        rotation="90 0 0" material="color: #0099ff; transparent: true; opacity:0.5"></a-entity>
+
+    </a-entity>
+    <a-entity reverse-look-controls id="target" camera look-controls
+      orbit-controls="target: 0 1.6 -0.5; minDistance: 0.5; maxDistance: 180; initialPosition: 0 5 1">
+      <a-sphere scale="0 0 0">
+
+      </a-sphere>
+    </a-entity> -->
+
+    <a-entity controllerinput id="vrHeadsetControllerCursorLeft" laser-controls="hand: left; model:false;"
+      raycaster="objects: .clickable;enabled:true" line="color:red; opacity:0">
+    </a-entity>
+
+    <a-entity controllerinput id="vrHeadsetControllerCursorRight" laser-controls="hand: right; model:false;"
+      raycaster="objects: .clickable;enabled:true" line="color:red; opacity:0">
+    </a-entity>
+
+
+    <a-sphere id="rotate-sphere" transparent="true" material="opacity: 0.0">
+      <a-sphere id="rotate-sphere-2" transparent="true" material="opacity: 0.0">
+        <a-sky id="loadingTest" src="#video" position="0 0 0" rotation="0 270 0" 
+          allow="gyroscope; accelerometer; magnetometer">
+        </a-sky>
+      </a-sphere>
+    </a-sphere>
+
+    <a-plane transparent="true" material="opacity:0" id="mobileDisplay">
+      <div id="mobile-button" class="play-ios">
+        <button class="mobileButtonCenter" onclick="toggleVideo()">Play</button>
+        <div id="instructions" class="instructionss">
+          <a id="instructionsFrenchButton"
+            onclick='changeInstructionsLanguage("instructions","instructionsFR")'>Français</a>
+          <ul>
+            <p>Instructions</p>
+            <li>To use the video player during the experience, look down and gaze for a second once you have found the
+              blue ring.</li>
+            <li>When you are ready, click on "Play" and enter VR mode by clicking on the VR icon at the bottom of the
+              screen.</li>
+          </ul>
+        </div>
+        <div id="instructionsFR" class="instructionss">
+          <a id="instructionsFrenchButton"
+            onclick='changeInstructionsLanguage("instructionsFR","instructions")'>English</a>
+          <ul>
+            <p>Instructions</p>
+            <li>Pour utiliser le lecteur vidéo durant l'expérience, regardez vers le bas et fixez l'anneau bleu que vous
+              voyez apparaître durant une seconde.</li>
+            <li>Lorsque vous êtes prêts, cliquez sur "Play" et entrez en mode VR en cliquant sur l'icône VR située en
+              bas de l'écran.</li>
+          </ul>
+        </div>
+        <div id="instructionsVR" class="instructionss">
+          <a id="instructionsFrenchButtonVR"
+            onclick='changeInstructionsLanguage("instructionsVR","instructionsVRFR")'>Français</a>
+          <ul>
+            <p>Instructions</p>
+            <li>To enter VR mode, click on the VR icon at the bottom right of the screen.</li>
+            <li>Use the touchpad or press a button to make the video player appear/disappear.</li>
+            <li> Then, press the trigger to use the controls of the video player.</li>
+          </ul>
+        </div>
+        <div id="instructionsVRFR" class="instructionss">
+          <a id="instructionsEnglishButtonVR"
+            onclick='changeInstructionsLanguage("instructionsVRFR","instructionsVR")'>English</a>
+          <ul>
+            <p>Instructions</p>
+            <li>Pour entrer en mode VR, cliquez sur l'icône située dans le coin inférieur droite de l'écran.</li>
+            <li>Utilisez le pavé tactile ou appuyez sur un bouton pour faire apparaître/disparaître le lecteur video.
+            </li>
+            <li> Ensuite, utilisez la gâchette pour utiliser les contrôles du lecteur de vidéo.</li>
+          </ul>
+        </div>
+        <!-- <button id="instructions" class="instructionss"><a id="instructionsFrenchButton" onclick='changeInstructionsLanguage("instructions","instructionsFR")'>Français</a>  <p>To see the video player, look down. When you see a blue ring appearing, gaze for a second</p></button>
+    
+        <button id="instructionsFR" class="instructionss"><a id="instructionsEnglishButton" onclick='changeInstructionsLanguage("instructionsFR","instructions")'>English</a> Pour voir le lecteur de vidéo, regardez vers le bas. Lorsque vous voyez un anneau bleu apparaître, fixez ce même point environ une seconde.</button> -->
+
+        <!-- <button id="instructionsVR" class="instructionss"><a id="instructionsFrenchButtonVR" onclick='changeInstructionsLanguage("instructionsVR","instructionsVRFR")'>Français</a>  <p>Use the touchpad or press a button to make the video player appear/disappear.</p>
+          <p>Then, press the trigger to use the controls of the video player.</p></button>
+    
+        <button id="instructionsVRFR" class="instructionss"><a id="instructionsEnglishButtonVR" onclick='changeInstructionsLanguage("instructionsVRFR","instructionsVR")'>English</a>
+          <p>Utilisez le pavé tactile ou appuyez sur un bouton pour faire apparaître/disparaître le lecteur video.</p>
+          <p>Ensuite, utilisez la gâchette pour utiliser les contrôles du lecteur de vidéo.</p></button>
+    -->
+      </div>
+
+    </a-plane>
+
+    <a-plane id="bouncingArrow" material="color: white; opacity:0.3;" position='0 -2 -1' src="#upArrow" rotation="0 1 0"
+      scale="1 1 1">
+
+    </a-plane>
+    <script>
+      let thisInterval = 0
+      window.setInterval(() => {
+        if (document.getElementById('controls').getAttribute('visible') && document.getElementById('play-ring').getAttribute('theta-length') == 0.05) {
+          thisInterval++;
+          if (thisInterval > 7) {
+            document.getElementById('controls').children[10].click();
+            thisInterval = 0;
+          }
+        }else {
+          thisInterval = 0;
+        }
+      }, 1000)
+    </script>
+
+
+
+  </a-scene>
+  <div class="no-support overlay" id="no-support" style="display:none">
+    <div class="overlay-inner" id="english" lang="en">
+
+      <nav id="french-nav">
+        <a id="toggleFrench">Français</a>
+
+      </nav>
+      <div id="exitSpaceFrench">
+        <h1>Let's enable your motion sensors</h1>
+        <div class="step">
+          <h1>1.</h1>
+          <p>Open</p><span><img src="assets/ios-settings.png" alt="settings icon"></span>
+          <p>Settings</p>
+        </div>
+        <div class="step">
+          <h1>2.</h1>
+          <p>Select</p><span><img src="assets/safari.jpg" alt="safari icon"></span>
+          <p>Safari</p>
+        </div>
+        <div class="step">
+          <h1>3.</h1>
+          <p>Enable: Motion & Orientation Access</p>
+        </div>
+        <div class="step">
+          <h1>4.</h1>
+          <p>Reload the page</p><span><img src="assets/reload.png" alt="reload icon"></span>
+        </div>
+        <div id="exitOverlay">
+          <p>Continue Anyway</p>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div id="frenchToggleSupport">
+    <div lang="fr" id="frenchDropdown" style="visibility:hidden">
+      <div class="overlay-inner" id="french">
+        <nav id="english-nav">
+          <a id="toggleEnglishh">English</a>
+
+        </nav>
+        <div id="exitSpace">
+          <h1>Activons vos capteurs de mouvement</h1>
+          <div class="step">
+            <h1>1.</h1>
+            <p> Allez dans</p><span><img src="assets/ios-settings.png" alt="settings icon"></span>
+            <p>Réglages </p>
+          </div>
+          <div class="step">
+            <h1>2.</h1>
+            <p>Sélectionnez </p><span><img src="assets/safari.jpg" alt="safari icon"></span>
+            <p>Safari </p>
+          </div>
+          <div class="step">
+            <h1>3.</h1>
+            <p>Activez :Accès aux mouvements et à l'orientation </p>
+          </div>
+          <div class="step">
+            <h1>4.</h1>
+            <p>Rechargez la page</p><span><img src="assets/reload.png" alt="reloadicon"></span>
+          </div>
+          <div id="exitOverlayFrench">
+            <p>
+              Poursuivre quand même</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="no-support overlay" id="android" style="display:none">
+    <div class="overlay-inner" id="english" lang="en">
+
+      <nav id="french-nav">
+        <a id="toggleFrenchA">Français</a>
+
+      </nav>
+      <div id="esa">
+        <h1>Let's enable your motion sensors</h1>
+        <div class="step">
+          <h1>1.</h1>
+          <p>Enter: <a href="chrome://flags/#enable-generic-sensor">chrome://flags/#enable-generic-sensor</a> In the url
+            bar</p>
+        </div>
+        <div class="step">
+          <h1>2.</h1>
+          <p>Enable the Generic Sensor</p>
+        </div>
+        <div class="step">
+          <h1>3.</h1>
+          <p>Click 'Relaunch Now</p>
+        </div>
+        <div id="exitA">
+          <p>Continue Anyway</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <div lang="fr" id="androidFrench" style="display:none">
+    <div class="overlay-inner" id="french">
+      <nav id="english-nav">
+        <a id="toggleEnglishA">English</a>
+
+      </nav>
+      <div id="asaf">
+        <h1>Activons vos capteurs de mouvement</h1>
+        <div class="step">
+          <h1>1.</h1>
+          <p> Ouvrez Google Chrome et tapez "<a
+              href="chrome://flags/#enable-generic-sensor">chrome://flags/#enable-generic-sensor </a>" dans la barre
+            d'adresse</p>
+        </div>
+        <div class="step">
+          <h1>2.</h1>
+          <p>Cherchez "Generic Sensor" et changez "Disabled" pour "Enabled"</p>
+        </div>
+        <div class="step">
+          <h1>3.</h1>
+          <p> Cliquez sur "Relaunch Now"</p>
+        </div>
+        <div id="exitAF">
+          <p> Poursuivre quand même</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+
+  <script>
+    leftControllerTag = document.getElementById('vrHeadsetControllerCursorLeft')
+    rightControllerTag = document.getElementById('vrHeadsetControllerCursorRight')
+    setTimeout(() => {
+      setCorrectCursor();
+      // initializeInstructions();
+      renderInstructions('ENGLISH')
+      document.getElementById('video').onplay = destroyInstructions
+      setTimeout(()=>{
+        destroyInstructions()
+      },20000)
+
+
+      console.log('currentDeviceType', currentDeviceType)
+      if(currentDeviceType===DEVICE_TYPES.IOS){
+        let skyTag=document.getElementsByTagName('a-sky')[0]
+        skyTag.setAttribute('rotation','180 270 0')
+      }
+    }, 2500)
+    if ("SamsungChangeSky" in window) {
+      window.SamsungChangeSky({ sphere: "samples/milford-sound.jpg" });
+    }
+    
+  </script>
+  <script>
+
+
+    //     if(!currentDeviceType===DEVICE_TYPES.VR_HEADSET){
+    //   console.log('initializing intructionsVR')
+    //   console.log('document.getElementById("instructionsVR")', document.getElementById("instructionsVR"))
+    //   document.getElementById("instructionsVR").style.display = "none";
+    //   document.getElementById("instructionsVR").style.opacity = "0";
+    //   document.getElementById("instructionsVR").style.visivility = 'hidden';
+    //   document.getElementById("instructionsVR").style.position = 'absolute';
+    //   document.getElementById("instructions").style.display = "flex !important";
+    //   document.getElementById("instructions").style.opacity = "1 !important";
+    //   document.getElementById("instructions").style.visivility = 'visible !important';
+    //   document.getElementById("instructions").style.position = 'relative !important';
+    // }
+    // const isGear = AFRAME.utils.device.isGearVR();
+    // const isGo = AFRAME.utils.device.isOculusGo();
+    // !AFRAME.utils.isMobile() && AFRAME.utils.checkHeadsetConnected()
+    // function isOculusGo () {
+    //   return /Pacific Build.+OculusBrowser.+SamsungBrowser.+MobileVR/i.test(window.navigator.userAgent);
+    // } if (isOculusGo()) {
+    //   document.getElementById("instructionsFrenchButtonVR").addEventListener('click', function(){
+
+    // document.getElementById("instructionsVR").style.display = "none";
+    // document.getElementById("instructionsVRFR").style.display = "flex";
+    // document.getElementById("instructionsVRFR").style.visibility = "visible";
+    // document.getElementById("instructionsVRFR").style.opacity = "1";
+    // document.getElementById("instructionsVRFR").style.position = "relative";
+    // });
+    // document.getElementById("instructionsEnglishButtonVR").addEventListener('click', function(){
+
+    // document.getElementById("instructionsVRFR").style.display = "none";
+    // document.getElementById("instructionsVR").style.display = "block";
+
+    // });
+    // }
+
+    // if ( isGear && isGo ) {
+    //   console.log('This is Go!');
+    //   document.getElementById("instructionsFrenchButtonVR").addEventListener('click', function(){
+
+    // document.getElementById("instructionsVR").style.display = "none";
+    // document.getElementById("instructionsVRFR").style.display = "flex";
+    // document.getElementById("instructionsVRFR").style.visibility = "visible";
+    // document.getElementById("instructionsVRFR").style.opacity = "1";
+    // document.getElementById("instructionsVRFR").style.position = "relative";
+    // });
+    // document.getElementById("instructionsEnglishButtonVR").addEventListener('click', function(){
+
+    // document.getElementById("instructionsVRFR").style.display = "none";
+    // document.getElementById("instructionsVR").style.display = "block";
+
+    // });
+    // }
+
+    // if ( isGear && ! isGo ) {
+    //   console.log('This is Gear!');
+    //   document.getElementById("instructionsFrenchButtonVR").addEventListener('click', function(){
+
+    // document.getElementById("instructionsVR").style.display = "none";
+    // document.getElementById("instructionsVRFR").style.display = "flex";
+    // document.getElementById("instructionsVRFR").style.visibility = "visible";
+    // document.getElementById("instructionsVRFR").style.opacity = "1";
+    // document.getElementById("instructionsVRFR").style.position = "relative";
+    // });
+    // document.getElementById("instructionsEnglishButtonVR").addEventListener('click', function(){
+
+    // document.getElementById("instructionsVRFR").style.display = "none";
+    // document.getElementById("instructionsVR").style.display = "block";
+
+    // });
+    // }
+
+
+
+
+    let scene = document.querySelector("a-scene");
+    let vid = document.getElementById("video");
+    // vid.addEventListener("ended", () => {
+    //   scene.exitVR();
+    //   if (window.location.search == '' || window.location.search == '?blackhawks' || window.location.search == '?travel-the-world' || window.location.search == '?golf-tournament') {
+    //     window.location.assign(OUR_URL.LANDING_PAGE);
+    //   }else {
+    //     window.location.assign(OUR_URL.VR_PAGE);
+    //   }
+    // });
+    let button = document.querySelector("a-plane");
+
+    function getFirstBrowserLanguage() {
+      var nav = window.navigator,
+        browserLanguagePropertyKeys = ['language', 'browserLanguage', 'systemLanguage', 'userLanguage'],
+        i,
+        language,
+        len,
+        shortLanguage = null;
+
+      // support for HTML 5.1 "navigator.languages"
+      if (Array.isArray(nav.languages)) {
+        for (i = 0; i < nav.languages.length; i++) {
+          language = nav.languages[i];
+          len = language.length;
+          if (!shortLanguage && len) {
+            shortLanguage = language;
+          }
+          if (language && len > 2) {
+            return language;
+          }
+        }
+      }
+
+      // support for other well known properties in browsers
+      for (i = 0; i < browserLanguagePropertyKeys.length; i++) {
+        language = nav[browserLanguagePropertyKeys[i]];
+        length = language.len;
+        if (!shortLanguage && len) {
+          shortLanguage = language;
+        }
+        if (language && len > 2) {
+          return language;
+        }
+      }
+
+      return shortLanguage;
+    }
+
+    console.log(getFirstBrowserLanguage());
+
+
+
+    var isMobile = {
+      Android: function () {
+        return navigator.userAgent.match(/Android/i);
+      },
+      BlackBerry: function () {
+        return navigator.userAgent.match(/BlackBerry/i);
+      },
+      iOS: function () {
+        return navigator.userAgent.match(/iPhone|iPad|iPod/i);
+      },
+      Opera: function () {
+        return navigator.userAgent.match(/Opera Mini/i);
+      },
+      Windows: function () {
+        return navigator.userAgent.match(/IEMobile/i);
+      },
+      any: function () {
+        return (
+          isMobile.Android() ||
+          isMobile.BlackBerry() ||
+          isMobile.iOS() ||
+          isMobile.Opera() ||
+          isMobile.Windows()
+        );
+      }
+    };
+    let timeoutID;
+    if (isMobile.any()) {
+      document.onvisibilitychange = () => {
+        console.log('timeout', timeoutID);
+        if (document.visibilityState.match(/hidden/i)) {
+          // timeoutID = window.setTimeout(() => {
+          //   fetch(OUR_URL.SERVER_HOST + "/api/videos/clearuservideohash/?hash=" + videoHash + '&userId=' + userId + '&accessToken=' + accessToken + '&seconds=' + secondsWatched)
+          //     .then((response) => {
+          //       return response.text();
+          //     }).then((response) => {
+          //       // console.log('response from beforeunload', response);
+          //       if (window.location.search == '' || window.location.search == '?blackhawks' || window.location.search == '?travel-the-world' || window.location.search == '?golf-tournament') {
+          //         window.location.assign(OUR_URL.LANDING_PAGE);
+          //       }else {
+          //         window.location.assign(OUR_URL.VR_PAGE);
+          //       }
+          //     })
+          // }, 30000);
+        }else if (document.visibilityState.match(/visible/i)) {
+          // if (timeoutID) {
+          //   clearTimeout(timeoutID);
+          // }
+        }
+      }
+    }
+    /* if the device is not ios hide the download button */
+
+    if (isMobile.iOS()) {
+      var root = document.documentElement;
+      root.className += " mobileIOS";
+      // document.getElementById("cameraControl").setAttribute("width", "0");
+      // document.getElementById("cameraControl").setAttribute("height", "0");
+      if (window.DeviceOrientationEvent === true) {
+        // console.log(DeviceOrientationEvent);
+        // We can listen for change in the device's orientation...
+        // console.log('support');
+        //  document.getElementById("no-support").style.display="none";
+        //  document.getElementById("frenchDropdown").style.visibility="hidden";
+      } else {
+
+        if (getFirstBrowserLanguage().startsWith('en')) {
+          document.getElementById("no-support").style.display = "block";
+
+        } else if (getFirstBrowserLanguage().startsWith('fr')) {
+          document.getElementById("frenchDropdown").style.visibility = "visible";
+          document.getElementById("frenchDropdown").style.opacity = "1";
+
+        }
+
+
+      }
+      // window.addEventListener("click", function(){
+      //   document.getElementById("no-support").style.display="none";
+      // });
+      var mobile = (document.getElementById(
+        "mobile-button"
+      ).style.visibility = "visible");
+    }
+    function toggleVideo() {
+      document.getElementById('mobileDisplay').parentNode.removeChild(document.getElementById('mobileDisplay'))
+      var myVideo = document.getElementsByTagName("video")[0];
+      //  console.log('toggling video dammit')
+      if (myVideo.pause) {
+        // console.log('playing damn video')
+        myVideo.play();
+      } else {
+        myVideo.pause()
+      };
+      removeBouncingArrow()
+      document.getElementById('activator-ring').setAttribute("opacity", "0")
+      document.getElementById('activator-ring').style.transition = "0.5s ease";
+    }
+
+
+    //     document.querySelector('a-scene').addEventListener('enter-vr', function () {
+    //    console.log("ENTERED VR");
+    //    document.getElementById("mobile-button").style.display="none";
+    //    document.getElementById('activator-ring').setAttribute("opacity", "0")
+    // });
+
+    // document.sceneEl.is('vr-mode', function() {
+    //   console.log("ive been clicked");
+    //   document.getElementById("mobile-button").style.opacity = "0";
+    // });
+    // if (sceneEl.is('vr-mode')){
+    //   consodle.log('u in VRRRR bad IPHONE')
+    //   document.querySelector("mobileButtonCenter").style.display = "none";
+    // }
+    // var button = this.el.querySelector('.a-enter-vr-button');
+    // button.addEventListener('click', function () {
+    //  doccument.getElementById("mobile-button").style.opacity = 0;
+    // });
+    var circle = anime({
+      targets: [".loader"],
+      rotate: 180,
+      duration: 1600,
+      loop: true,
+      elasticity: 600,
+      easing: "easeOutElastic",
+      delay: function (el, index) {
+        return index * 80;
+      }
+    });
+    document.addEventListener("DOMContentLoaded", function () {
+      // console.log("hello");
+      // console.log("Yay! The readyState just increased to  " + "HAVE_CURRENT_DATA or greater for the first time.");
+
+      // var scene = document.querySelector('a-scene');
+      // var cameraTimeout = document.getElementById("nomadsLoading");
+      var blur = document.getElementById("mobileDisplay");
+      var activeMobile = document.getElementById("mobile-button");
+      scene.addEventListener("loaded", function (e) {
+        blur.style.transparent = "false";
+        blur.style.opacity = "1";
+        blur.style.transform = "rotate(0deg)";
+        activeMobile.style.display = "flex";
+        activeMobile.style.opacity = "1";
+        // cameraTimeout.style.display = "block";
+        //   document.getElementById("animeDemo").style.display = "block";
+      });
+    });
+    // document.getElementById("mobile-button").onclick = function () {
+
+    document.getElementById("mobile-button").style.display = "none";
+    // document.getElementById("mobileDisplay").style.display = "none";
+    // document.getElementById("instructions").style.opacity="1";
+    // document.getElementById("instructions").transparent="false";
+    // docuent.getElementById("instructions").style.display = "block";
+
+    video.addEventListener('canplaythrough', function () {
+      var promise = video.pause();
+      if (promise !== undefined) {
+        promise.catch(function (error) {
+          console.error('Auto-play was prevented');
+          console.error('We Show a UI element to let the user manually start playback');
+          activeMobile.style.display = 'block';
+        }).then(function () {
+          console.info('Auto-play started');
+          document.getElementById("mobile-button").style.display = 'none';
+        });
+      }
+    }); //  Fires when the browser can play through the audio/video without stopping for buffering
+
+    // window.classList.contains('mobileIOS', function(){
+    //   console.log("has class");
+    // });
+
+
+
+
+    // video.autoplay = 'false';
+    // video.playsinline = 'true';
+    // if (getFirstBrowserLanguage().startsWith('en')) {
+    //       document.getElementById("instructions").style.display = "block";
+    //     } else if (getFirstBrowserLanguage().startsWith('fr')) {
+    //       document.getElementById("instructionsFR").style.display = "block";
+    //     }
+
+    // document.getElementById("instructionsFrenchButtonVR").addEventListener('click', function(){
+
+    //   document.getElementById("instructionsVR").style.display = "none";
+    //   document.getElementById("instructionsVRFR").style.display = "flex";
+    //   document.getElementById("instructionsVRFR").style.visibility = "visible";
+    //   document.getElementById("instructionsVRFR").style.opacity = "1";
+    //   document.getElementById("instructionsVRFR").style.position = "relative";
+    // });
+    // document.getElementById("instructionsEnglishButtonVR").addEventListener('click', function(){
+
+    // document.getElementById("instructionsVRFR").style.display = "none";
+    // document.getElementById("instructionsVR").style.display = "block";
+
+    // });
+
+    document.getElementById("toggleFrench").addEventListener("click", function (e) {
+      e.preventDefault();
+      document.getElementById("frenchDropdown").style.visibility = "visible";
+      document.getElementById("frenchDropdown").style.opacity = "1";
+      document.getElementById("frenchDropdown").style.transition = "0.7s ease";
+    });
+    document.getElementById("exitOverlay").addEventListener("click", function (e) {
+      e.preventDefault();
+      document.getElementById("no-support").style.display = "none";
+      document.getElementById("frenchDropdown").style.visibility = "hidden";
+      document.getElementById("frenchDropdown").style.opacity = "0";
+      document.getElementById("no-support").style.transition = "0.7s ease";
+    });
+    document.getElementById("exitOverlayFrench").addEventListener("click", function (e) {
+      e.preventDefault();
+      document.getElementById("frenchDropdown").style.visibility = "hidden";
+      document.getElementById("frenchDropdown").style.opacity = "0";
+      document.getElementById("no-support").style.display = "none";
+      document.getElementById("no-support").style.transition = "0.7s ease";
+    });
+    document.getElementById("toggleEnglishh").addEventListener("click", function (e) {
+      e.preventDefault();
+      document.getElementById("no-support").style.display = "block";
+      document.getElementById("frenchDropdown").style.display = "none";
+      document.getElementById("frenchDropdown").style.transition = "0.7s ease";
+    });
+
+    // console.log('checking if android', currentDeviceType)
+    if (currentDeviceType === DEVICE_TYPES.ANDROID) {
+      // console.log('it is android')
+      window.navigator.permissions.query({ name: 'gyroscope' }).then((response) => {
+        // console.log(response);
+      }).catch((error) => {
+        // console.warn(error);
+        document.getElementById("android").style.display = "block";
+
+        // alert(error);
+
+        // alert(error);
+
+
+      });
+    }
+    document.getElementById("toggleFrenchA").addEventListener("click", function (e) {
+      e.preventDefault();
+      document.getElementById("androidFrench").style.display = "block";
+      document.getElementById("android").style.display = "none";
+      // document.getElementById("androidFrench").style.opacity="1";
+      document.getElementById("androidFrench").style.transition = "0.7s ease";
+    });
+    document.getElementById("exitA").addEventListener("click", function (e) {
+      e.preventDefault();
+      document.getElementById("android").style.display = "none";
+      document.getElementById("androidFrench").style.display = "none";
+      // document.getElementById("androidFrench").style.opacity="0";
+      document.getElementById("android").style.transition = "0.7s ease";
+    });
+    document.getElementById("exitAF").addEventListener("click", function (e) {
+      e.preventDefault();
+      document.getElementById("androidFrench").style.display = "none";
+      // document.getElementById("androidFrench").style.opacity="0";
+      document.getElementById("android").style.display = "none";
+      document.getElementById("android").style.transition = "0.7s ease";
+    });
+    document.getElementById("toggleEnglishA").addEventListener("click", function (e) {
+      e.preventDefault();
+      document.getElementById("android").style.display = "block";
+      document.getElementById("androidFrench").style.display = "none";
+    });
+
+
+    var mobile = (/iphone|ipod|\sce|palm/i.test(navigator.userAgent.toLowerCase()));
+    // if (mobile) {
+    //     alert("MOBILE DEVICE!!");
+    //     $('#cameraControl').setAttribute('material',"opacity: 0.0"); // OR you can use $('.navWrap').hide();
+    // } 
+    // else 
+    // { 
+    //    alert("NOT A MOBILE DEVICE!!"); 
+    // }
+
+
+
+  </script>
+
+</body>
+
+</html>

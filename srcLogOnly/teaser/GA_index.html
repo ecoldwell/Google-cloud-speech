@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>NOMADS</title>
+ <script src="src/js/app.scss"></script>
+  <script src="https://aframe.io/releases/0.7.1/aframe.min.js"></script>
+  <script src="https://unpkg.com/aframe-animation-component@^4.1.2/dist/aframe-animation-component.min.js"></script> 
+  <script
+    src="https://rawgit.com/mayognaise/aframe-mouse-cursor-component/master/dist/aframe-mouse-cursor-component.min.js"></script>
+  <script src="dist/player-skin.js"></script>
+  <script src="dist/player.full.js"></script>
+  <script src>"js/AVideoPlayer.js"</script>
+  <script src="/arrow-key-rotation.js"></script>
+  <script src="/play-on-window-click.js"></script>
+  <script src="/play-on-vrdisplayactivate-or-enter-vr.js"></script>
+  <script src="/hide-once-playing.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/animejs/2.0.2/anime.min.js"></script>
+  <script src="/dist/aframe-video-controls.js"></script>
+
+  <script src="https://unpkg.com/aframe-proxy-event-component/dist/aframe-proxy-event-component.min.js"></script>
+  <script>
+    var videoLink = "http://nomadsstagmediaservices-caea.streaming.media.azure.net/5dd1bc88-99e4-4b75-b41f-144b18df6eed/Light_Teaser_Final_v002_5k.ism/manifest(format=mpd-time-csf)"
+    var videoType = "application/dash+xml"
+  </script>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-125950486-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-125950486-1');
+</script>
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-W48MX2X');</script>
+  <style type="text/css">
+    #video-permission {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: white;
+      z-index: 10000;
+      display: none;
+    }
+    #video-permission-button {
+      position: fixed;
+      top: calc(50% - 1em);
+      left: calc(50% - 60px);
+      width: 120px;
+      height: 2em;
+    }
+    html {
+      height: 100%;
+      width: 100%;
+      padding: 0;
+      margin: 0;
+    }
+    body {
+      height: 100%;
+      width: 100%;
+      padding: 0;
+      margin: 0;
+      overflow: hidden;
+    }
+    object {
+      height: 100%;
+      width: 100%
+    }
+    #video {
+      width: 100%;
+      height: 100%
+    }
+    .video-wrapper {
+      /* display: block !important; */
+    }
+
+    #playPlane,
+    #backPlane {
+      visibility:hidden;
+      opacity:0;
+      transition: 7s ease all;
+    }
+
+    #playPlane:hover,
+    #backPlane:hover {
+      visibility:visible;
+      opacity:1;
+    }
+
+    .transition {
+      transition: visibility 0s linear 300ms, opacity 300ms !important;
+    }
+
+    .loadingWrapper {
+      position:absolute;
+      width:100vw;
+      height:100vh;
+      top:0;
+      bottom:0;
+      right:0;
+      left:0;
+      display:block;
+      background-color:black;
+    }
+  .center {
+      position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translateX(-50%) translateY(-50%);
+
+}
+.circle {
+  background-color: #fff;
+  display: inline-block;
+  border-radius: 50%;
+  margin: 5px;
+  box-shadow: 0 -5px 5px 1px rgba(0,0,0,0.2);
+  width:20px;
+  height:20px;
+}
+
+.circle-1 {
+  background-color: #00ffff ;
+  background: linear-gradient(tint( #00ffff , -100%), tint( #00ffff , 20%));
+}
+
+.circle-2 {
+  background-color: white;
+  background: linear-gradient(tint(white, -10%), tint(white,30%));
+}
+#mobile-button {
+  /* display: block; */
+    position: absolute;
+    /* top: 50%; */
+    /* bottom: 50%; */
+    /* height: 20vw; */
+    /* width: 30vw; */
+    /* left: 50%; */
+    width: 100vw;
+    height: 100vh;
+    /* right: 100%; */
+    /* left: 100%; */
+   /* visibility:hidden; */
+    justify-content: center;
+    align-items: center;
+    display:none;
+
+}
+
+#mobile-button button {
+  height: 8vh;
+    width: 25vw;
+    border: 1px solid white;
+    color:white;
+}
+/* 
+.mobileIOS #mobile-button {
+  display:flex;
+}
+
+.activeMobile {
+  display:flex;
+} */
+
+.mobileIOS {
+  display:flex;
+}
+
+/* @keyframes spin::before{
+transform: rotate(0deg);
+}
+@keyframes spin::after{
+transform: rotate(360deg);
+} */
+
+/* .loading {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 0.25rem solid rgba(255, 255, 255, 0.2);
+  border-top-color: white;
+  animation: spin 1s infinite linear;
+} */
+  </style>
+</head>
+<body>
+  <!-- Google Tag Manager (noscript) -->
+
+  <!-- End Google Tag Manager (noscript) -->
+  <!-- Use components defined in separate files. -->
+  <script>
+
+
+    AFRAME.registerComponent('play-on-focus', {
+      schema: {
+        color: { default: 'red' }
+      },
+      init: function () {
+        let vid = document.getElementById('video');
+        // var vid = videojs('video');
+        let data = this.data;
+        let el = this.el;
+        // let playBtn = document.getElementById('playBtn');
+        // el.addEventListener('mouseenter', function () {
+        //   // el.setAttribute('color', data.color);
+        //   console.log('Enter');
+        //   vid.pause();
+        // });
+        // el.addEventListener('mouseleave', function () {
+        //   // el.setAttribute('color', defaultColor);
+        //   console.log('Leave');
+        //   vid.play();
+        // });
+        // el.addEventListener('click', () => {
+        //   if (vid.paused) {
+        //     console.log("Video played");
+        //     vid.play();
+        //     playBtn.setAttribute('src', 'assets/pause.png');
+            
+        //   } else {
+        //     console.log("Video paused");
+        //     vid.pause();
+        //     playBtn.setAttribute('src', 'assets/play.png');
+        //   }
+        // });
+      }
+    });
+    AFRAME.registerComponent('controls-appear', {
+      init: function () {
+        let el = this.el;
+        let data = this.data;
+        let controlbar = document.getElementById('controls');
+        // let playBtn = document.getElementById('playBtn');
+        // let backBtn = document.getElementById('backBtn');
+        // let playPlane = document.getElementById('playPlane');
+        // let backPlane = document.getElementById('backPlane');
+        let cursor = document.getElementById('cursorToggle')
+        el.addEventListener('mouseenter', function () {
+          console.log('Enter');
+          // playBtn.setAttribute('material', 'opacity: 1.0');
+          // backBtn.setAttribute('material', 'opacity: 1.0');
+          // playPlane.setAttribute('material', 'opacity: 1.0');
+          // backPlane.setAttribute('material', 'opacity: 1.0');
+          cursor.setAttribute('visible', 'true');
+          controlbar.setAttribute('visible', 'true');
+          // button.setAttribute('visible', 'true');
+          // curs.setAttribute('visible', 'true');
+        });
+        el.addEventListener('mouseleave', function () {
+          console.log('Leave');
+          // playBtn.setAttribute('material', 'opacity: 0.0');
+          // backBtn.setAttribute('material', 'opacity: 0.0');
+          // playPlane.setAttribute('material', 'opacity: 0.0');
+          // backPlane.setAttribute('material', 'opacity: 0.0');
+          cursor.setAttribute('visible', 'false');
+          controlbar.setAttribute('visible', 'false');
+          // playPlane.setAttribute('material', 'opacity: 0.0');
+          // button.setAttribute('visible', 'false');
+          // curs.setAttribute('visible', 'false');
+        });
+      }
+    })
+    // AFRAME.registerComponent('go-back', {
+    //   init: function () {
+    //     let el = this.el;
+    //     let data = this.data;
+    //     el.addEventListener('click', function () {
+    //       console.log('Back');
+    //       var test = document.querySelector('a-scene');
+    //       test.exitVR();
+    //       // var times = window.history.length;
+    //       // window.history.back(times);
+    //       // var host = window.location.host;
+    //       window.location.href ='https://bself.life';
+    //       // button.setAttribute('visible', 'true');
+    //       // curs.setAttribute('visible', 'true');
+    //     });
+    //   }
+    // })
+    
+  </script>
+  <!-- LOADING SCREEN -->
+  <!-- <div id="splash">
+      <div class="loading"></div>
+    </div> -->
+<a-plane>
+  <div class="loadingWrapper">
+    <div class="center" id="center">
+        <div class="loader blur" id="blur">
+          <div class="circle circle-1"></div>
+          <div class="circle circle-2"></div>
+          <!-- <div class="circle circle-3"></div>
+          <div class="circle circle-4"></div>
+          <div class="circle circle-5"></div>
+          <div class="circle circle-6"></div>
+          <div class="circle circle-7"></div>
+          <div class="circle circle-8"></div>
+          <div class="circle circle-9"></div>
+          <div class="circle circle-10"></div>
+          <div class="circle circle-11"></div>
+          <div class="circle circle-12"></div> -->
+        </div>
+      </div>
+      </div>
+  </a-plane>
+  <!-- Specify our scene. -->
+  <a-scene>
+
+    <a-assets>
+      <img src="assets/play.png" id="play" crossorigin="anonymous">
+      <img src="assets/pause.png" id="pause" crossorigin="anonymous">
+      <img src="assets/volume-normal.png" id="volume-normal" crossorigin="anonymous">
+      <img src="assets/volume-mute.png" id="volume-mute" crossorigin="anonymous">
+      <img src="assets/seek-back.png" id="seek-back" crossorigin="anonymous">
+    </a-assets>
+    <!-- The original example also has this 180 degree rotation, to appear to be going forward. -->
+    <a-videosphere rotation="0 270 0" src="#video" play-on-vrdisplayactivate-or-enter-vr>
+    </a-videosphere>
+    <!-- Define camera with zero user height, movement disabled and arrow key rotation added. -->
+
+    <!-- Wait for the video to load. -->
+    <a-assets class="video-wrapper">
+      <!-- Single source video. -->
+      <video id="video" class="video-js vjs-default-skin" autoplay preload="auto" crossOrigin="anonymous"
+        width="100%" height="100%" controls playsinline webkit-playsinline>
+        <source
+          src="http://nomadsstagmediaservices-caea.streaming.media.azure.net/9a3c85a7-36f3-4631-9d31-9964fb588aee/Finale_Teaser_v007_VolBot_b_03_2.ism/manifest(format=m3u8-aapl-v3)"
+          type="application/x-mpegURL">
+        <source
+          src="http://nomadsstagmediaservices-caea.streaming.media.azure.net/9a3c85a7-36f3-4631-9d31-9964fb588aee/Finale_Teaser_v007_VolBot_b_03_2.ism/manifest(format=m3u8-aapl-v3)"
+          type="application/x-mpegURL">
+        <source
+          src="http://nomadsstagmediaservices-caea.streaming.media.azure.net/9a3c85a7-36f3-4631-9d31-9964fb588aee/Finale_Teaser_v007_VolBot_b_03_2.ism/manifest(format=mpd-time-csf)"
+          type="application/dash+xml">
+          <!-- <source
+          src="https://bitmovin-a.akamaihd.net/content/playhouse-vr/mpds/105560.mpd"
+          type="application/dash+xml"> -->
+      </video>
+    </a-assets>
+    <a-plane transparent = "true" material="opacity:0">
+      <div id="mobile-button" class = "play-ios">
+        <button onclick="toggleVideo()">Play</button>
+      </div>
+    </a-plane>
+    <!-- <a-box id="control-box" play-on-focus position="-1 0.5 -3" rotation="0 45 0" color="#4CC3D9"></a-box> -->
+<!-- <a-entity id="box" geometry="primitive: box" material="opacity: 0.0"
+    proxy-event__enter="event: mouseenter; to: a-cylinder; as: foo"
+    proxy-event__leave="event: mouseleave; to: a-cylinder; as: bar"> -->
+    <!-- <a-plane id = "playPlane" height="2" width="2" rotation="-30 0 0" position="1 -2 -5" controls-appear class="clickable" transparent = "true" material="opacity:0" 
+    animation__fadein="property: material.opacity; dur: 2000;
+    easing: linear; from 1; to: 0; startEvents: fadein"
+animation__fadeout="property: material.opacity; dur: 2000;
+    easing: linear; from 1; to: 0; startEvents: fadeout">
+       
+      <a-image id="playBtn" src="assets/pause.png" visible="true" scale="2 2 2"  transpanrent= "true" material="opacity: 0.0" play-on-focus>
+        
+      </a-image>
+</a-plane>
+</a-entity>
+ 
+    <a-plane id = "backPlane" color="#000" height="2" width="2" transparent = "true" material="opacity: 0.0" rotation="-30 0 0" position="-1.5 -2 -5" controls-appear class="clickable"
+    animation__fadein="property: material.opacity;  startEvents: foo; pauseEvents: bar; dur: 2000;
+    easing: linear; from 0; to: 1; startEvents: fadein"
+animation__fadeout="property: material.opacity; dur: 2000;
+    easing: linear; from 1; to: 0; startEvents: fadeout">
+     
+      <a-image id="backBtn" src="assets/seek-back.png" visible="true" scale="2 2 2" material="opacity: 0.0" go-back></a-image>
+    </a-plane> -->
+    <a-entity id="controls" 
+              visible="false"
+              video-controls="src:#video; distance: 3; size:4;" 
+              controls-appear
+              onClick="_gaq.push(['_trackEvent', 'preview', 'click',, 1, true]);">
+    </a-entity> 
+    <!-- <a-mixin id="sphere" geometry="primitive: sphere"></a-mixin> -->
+    <a-entity position="0 2.2 4">
+        <a-entity camera look-controls wasd-controls mouse-cursor >
+          <a-entity position="0 0 -3"
+                    geometry="primitive: ring; radiusOuter: 0.30;
+                              radiusInner: 0.20;"
+                    material="color: cyan; shader: flat"
+                    cursor="maxDistance: 30; fuse: true"
+                    scale = "0.1 0.1 0.1"
+                    visible = "false" 
+                    id = "cursorToggle"
+                    proxy-event__enter="event: mouseenter; to: a-plane; as: foo"
+                    proxy-event__leave="event: mouseleave; to: a-plane; as: bar">
+            <a-animation begin="click" easing="ease-in" attribute="scale"
+                 fill="backwards" from="0.1 0.1 0.1" to="1 1 1" dur="150"></a-animation>
+            <a-animation begin="fusing" easing="ease-in" attribute="scale"
+                 fill="forwards" from="1 1 1" to="0.1 0.1 0.1" dur="1500"></a-animation>
+          </a-entity>
+        </a-entity>
+      </a-entity>
+      
+      <!-- <a-entity geometry="primitive: box" material="color: black"
+      animation__color="property: material.color; dir: alternate; dur: 1000;
+                        easing: easeInSine; loop: true; to: #FFF">
+</a-entity>
+
+<a-entity geometry="primitive: box" material="color: orange"
+      animation__fadein="property: material.opacity; dur: 100;
+                          easing: linear; from 0; to: 1; startEvents: fadein"
+      animation__fadeout="property: material.opacity; dur: 100;
+                          easing: linear; from 1; to: 0; startEvents: fadeout">
+</a-entity>
+
+<a-cylinder color="#F55" radius="0.1"
+        animation="property: color; dir: alternate; dur: 1000;
+                   easing: easeInSine; loop: true; to: #5F5"
+        animation__scale="property: scale; dir: alternate; dur: 200;
+                   easing: easeInSine; loop: true; to: 1.2 1 1.2"
+        animation__yoyo="property: position; dir: alternate; dur: 1000;
+                         easing: easeInSine; loop: true; to: 0 2 0">
+</a-cylinder> -->
+      <!-- <a-curvedimage src="assets/play.png" play-on-focus></a-image> -->
+      <!-- <a-image id="button" src="assets/pause.png" visible="false" play-on-focus></a-image> -->
+    <!-- <a-entity id="menu" geometry="primitive: sphere; thetaLength: 20; phiLength: 360 radius:0.5" color="#A0A0A0"
+      scale="0.5 0.5 0.5" visible="false" play-on-focus>
+    </a-entity> -->
+  </a-scene>
+  <!-- Show a button to switch to the multi-source example that shows detail. -->
+  <button onClick="window.location.href='multi-source-detail.html'" style="display:none">
+    Switch to multi-source detail example
+  </button>
+  <script>
+    if ('SamsungChangeSky' in window) {
+      window.SamsungChangeSky({ sphere: 'samples/milford-sound.jpg' });
+    }
+  </script>
+  <script src="js/AVideoPlayer.js"></script>
+  <script type="text/javascript">
+    let scene = document.querySelector('a-scene');
+    let vid = document.getElementById('video');
+    vid.addEventListener('ended', () => {
+      scene.exitVR();
+      window.location.href = 'https://bself.life';
+    })
+
+    let videoScene = document.querySelector("video");
+videoScene = addEventListener("clicked", () => {
+  scene.enterVR();
+  document.getElementById("mobile-button").style.display="flex";
+})
+  //   let button = document.querySelector('a-plane');
+  
+  //  cursor.removeAttribute('animation__cursorHideLeave');
+  //       cursor.setAttribute('animation__cursorHideEnter', "property: scale; from: 0.6 0.6 0.6; to: 0 0 0; dur: 300; easing: easeInQuad;");
+  //     }
+  //     let showCursor = function() {
+  //       cursor.removeAttribute('animation__cursorHideEnter');
+  //       cursor.setAttribute('animation__cursorHideLeave', "property: scale; from: 0 0 0; to: 0.6 0.6 0.6; dur: 300; easing: easeInQuad;");
+  //     }
+  //     document.querySelector('#video-screen').addEventListener('mouseenter', hideCursor);
+  //     document.querySelector('#video-screen').addEventListener('mouseleave', showCursor);
+
+//   var buttonEl = document.querySelector('a-plane');
+
+// function animateButton(visibility, opacity, duration, elasticity) {
+//   anime.remove(buttonEl);
+//   anime({
+//     targets: buttonEl,
+//     scale: scale,
+//     duration: duration,
+//     elasticity: elasticity
+//   });
+// }
+
+// function enterButton() { animateButton(1.2, 800, 400) };
+// function leaveButton() { animateButton(1.0, 600, 300) };
+
+// buttonEl.addEventListener('mouseenter', enterButton, false);
+// buttonEl.addEventListener('mouseleave', leaveButton, false);
+
+// let scene = document.querySelector('a-scene');
+//       var cursor = document.querySelector('a-cursor');
+
+// let hideCursor = function() {
+//         cursor.removeAttribute('animation__cursorHideLeave');
+//         cursor.setAttribute('animation__cursorHideEnter', "property: scale; from: 0.6 0.6 0.6; to: 0 0 0; dur: 300; easing: easeInQuad;");
+//       }
+//       let showCursor = function() {
+//         cursor.removeAttribute('animation__cursorHideEnter');
+//         cursor.setAttribute('animation__cursorHideLeave', "property: scale; from: 0 0 0; to: 0.6 0.6 0.6; dur: 300; easing: easeInQuad;");
+//       }
+//       document.querySelector('#video').addEventListener('mouseenter', hideCursor);
+//       document.querySelector('#video').addEventListener('mouseleave', showCursor);
+
+var isMobile = {
+    Android: function() {
+        return navigator.userAgent.match(/Android/i);
+    },
+    BlackBerry: function() {
+        return navigator.userAgent.match(/BlackBerry/i);
+    },
+    iOS: function() {
+        return navigator.userAgent.match(/iPhone|iPad|iPod/i);
+    },
+    Opera: function() {
+        return navigator.userAgent.match(/Opera Mini/i);
+    },
+    Windows: function() {
+        return navigator.userAgent.match(/IEMobile/i);
+    },
+    any: function() {
+        return (isMobile.Android() || isMobile.BlackBerry() || isMobile.iOS() || isMobile.Opera() || isMobile.Windows());
+    }
+};
+/* if the device is not ios hide the download button */
+
+if(isMobile.iOS()){
+var root = document.documentElement;
+root.className += ' mobileIOS';
+
+};
+function toggleVideo() {
+        var myVideo = document.getElementsByTagName('video')[0];
+ // console.log()
+        if (myVideo.pause)
+            myVideo.play();
+        else
+            myVideo.pause();
+      }
+var circle = anime ({
+  targets: ['.loader'],
+  rotate: 180,
+  duration: 1600,
+  loop: true,
+  elasticity: 600,
+  easing: 'easeOutElastic',
+  delay: function(el, index) {
+    return index * 80;
+  },
+});
+// document.addEventListener('loadeddata', function() {
+//       console.log('hello');
+//       console.log('Yay! The readyState just increased to  ' + 
+//       'HAVE_CURRENT_DATA or greater for the first time.');
+
+//     var scene = document.querySelector('a-scene');
+//     var splash = document.querySelector('#center');
+//     var blur = document.getElementById("blur");
+//     var activeMobile = document.getElementById("mobile-button");
+//     scene.addEventListener('loaded', function (e) {
+//         splash.style.display = 'none';
+//         blur.style.display ='none';
+//         blur.style.transform ='rotate(0deg)';
+//         activeMobile.style.display ="flex";
+
+//     });
+// });
+// document.getElementById('mobile-button').onclick = function() {document.getElementById('mobile-button').style.display = 'none';};
+
+const video = document.querySelector('video');
+
+video.onloadeddata = (event) => {
+  console.log('Yay! The readyState just increased to  ' + 
+      'HAVE_CURRENT_DATA or greater for the first time.');
+
+      var scene = document.querySelector('a-scene');
+    var splash = document.querySelector('#center');
+    var blur = document.getElementById("blur");
+    var activeMobile = document.getElementById("mobile-button");
+    scene.addEventListener('loaded', function (e) {
+        splash.style.display = 'none';
+        blur.style.display ='none';
+        blur.style.transform ='rotate(0deg)';
+        // activeMobile.style.display ="flex";
+      });
+      document.getElementById('mobile-button').onclick = function() {document.getElementById('mobile-button').style.display = 'none';};
+};
+
+
+
+
+  </script>
+</body>
+</html>

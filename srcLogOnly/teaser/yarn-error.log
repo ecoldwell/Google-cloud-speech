@@ -1,0 +1,60 @@
+Arguments: 
+  /usr/bin/node /usr/local/bin/yarn add file-saver
+
+PATH: 
+  /home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:/home/alin/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+
+Yarn version: 
+  1.16.0
+
+Node version: 
+  8.10.0
+
+Platform: 
+  linux x64
+
+Trace: 
+  Error: EACCES: permission denied, mkdir '/home/alin/Desktop/AWS/NOMADS/teaser/node_modules/abbrev'
+
+npm manifest: 
+  {
+    "name": "aframe-hello-world-boilerplate",
+    "description": "Boilerplate with A-Frame's 'Hello, World!' of WebVR.",
+    "version": "0.3.0",
+    "license": "MIT",
+    "scripts": {
+      "start": "budo --live --verbose --port 5000 --open",
+      "deploy": "ghpages",
+      "ghpages": "ghpages"
+    },
+    "devDependencies": {
+      "budo": "^11.6.2",
+      "ghpages": "0.0.10"
+    },
+    "keywords": [
+      "aframe",
+      "aframe-example",
+      "aframe-boilerplate",
+      "aframe-scene",
+      "webvr",
+      "vr"
+    ],
+    "dependencies": {
+      "aframe-animation-component": "^5.1.2",
+      "animejs": "^3.0.1",
+      "node-sass": "^4.11.0",
+      "sass": "^1.17.3",
+      "shaka": "^3.0.1",
+      "shaka-player": "^2.5.0-beta3",
+      "video-js": "^0.7.0",
+      "video.js": "^7.5.3",
+      "videojs-errors": "^4.2.0",
+      "videojs-vr": "^1.5.0"
+    }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile

@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://aframe.io/releases/0.9.0/aframe.min.js"></script>
+    <script src="https://unpkg.com/aframe-supercraft-loader/dist/aframe-supercraft-loader.min.js"></script>
+    <script src="https://unpkg.com/aframe-environment-component/dist/aframe-environment-component.min.js"></script>
+    <script src="https://unpkg.com/aframe-orbit-controls@1.0.0/dist/aframe-orbit-controls.min.js"></script>
+    <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/animejs/2.0.2/anime.min.js"></script>
+    <script src="dist/aframe-video-controls.js"></script>
+    <script src="dist/bottom-controls.js"></script>
+    <link href="https://vjs.zencdn.net/7.4.1/video-js.css" rel="stylesheet" />
+    <script src="https://vjs.zencdn.net/ie8/1.1.2/videojs-ie8.min.js"></script>
+    <script src="https://vjs.zencdn.net/7.4.1/video.js"></script>
+    <script src="js/AVideoPlayer.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+    <!-- <script
+      type="text/javascript"
+      src="https://cdn.bitmovin.com/player/web/8/bitmovinplayer.js"
+    ></script> -->
+
+    <script type="text/javascript" src="https://bitmovin-a.akamaihd.net/bitmovin-player/staging/7.4/bitmovinplayer.js"></script>
+    <script type="text/javascript" src="bitmovinplayer-vr-ambisonics.js"></script>
+
+    <style type="text/css">
+      #video-permission {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: white;
+        z-index: 10000;
+        display: none;
+      }
+      #video-permission-button {
+        position: fixed;
+        top: calc(50% - 1em);
+        left: calc(50% - 60px);
+        width: 120px;
+        height: 2em;
+      }
+      html {
+        height: 100%;
+        width: 100%;
+        padding: 0;
+        margin: 0;
+      }
+      body {
+        height: 100%;
+        width: 100%;
+        padding: 0;
+        margin: 0;
+        overflow: hidden;
+      }
+      object {
+        height: 100%;
+        width: 100%;
+      }
+      #video {
+        width: 100%;
+        height: 100%;
+      }
+
+      #playPlane,
+      #backPlane {
+        visibility: hidden;
+        opacity: 0;
+        transition: 7s ease all;
+      }
+
+      #playPlane:hover,
+      #backPlane:hover {
+        visibility: visible;
+        opacity: 1;
+      }
+
+      .transition {
+        transition: visibility 0s linear 300ms, opacity 300ms !important;
+      }
+
+      .loadingWrapper {
+        position: absolute;
+        width: 100vw;
+        height: 100vh;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        display: block;
+        background-color: black;
+      }
+      .center {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translateX(-50%) translateY(-50%);
+      }
+      .circle {
+        background-color: #fff;
+        display: inline-block;
+        border-radius: 50%;
+        margin: 5px;
+        box-shadow: 0 -5px 5px 1px rgba(0, 0, 0, 0.2);
+        width: 20px;
+        height: 20px;
+      }
+
+      .circle-1 {
+        background-color: #00ffff;
+        background: linear-gradient(tint(#00ffff, -100%), tint(#00ffff, 20%));
+      }
+
+      .circle-2 {
+        background-color: white;
+        background: linear-gradient(tint(white, -10%), tint(white, 30%));
+      }
+      #mobile-button {
+        /* display: block; */
+        position: fixed;
+
+        width: 100vw;
+        height: 100vh;
+        visibility: hidden;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        /* display:none; */
+      }
+
+      #mobile-button button {
+        height: 8vh;
+        width: 25vw;
+        border: 1px solid white;
+        color: white;
+        z-index: 0;
+      }
+
+      .mobileIOS {
+        /* display:flex; */
+      }
+
+      .a-loader-title {
+        display: none !important;
+      }
+      canvas {
+        background-color: black;
+      }
+
+      .a-fullscreen .a-canvas {
+        background-color: black !important;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-W48MX2X"
+      height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <script src="https://cdn.jsdelivr.net/npm/mobile-detect@1.4.3/mobile-detect.min.js"></script> -->
+    <!-- Use components defined in separate files. -->
+    <script>
+      AFRAME.registerComponent("play-on-focus", {
+        schema: {
+          color: { default: "red" }
+        },
+        init: function() {
+          let vid = document.getElementById("video");
+          // var vid = videojs('video');
+          let data = this.data;
+          let el = this.el;
+        }
+      });
+      AFRAME.registerComponent("controls-appear", {
+        init: function() {
+          let el = this.el;
+          let data = this.data;
+          let controlbar = document.getElementById("controls");
+          let cursor = document.getElementById("cursorToggle");
+          el.addEventListener("mouseenter", function() {
+            console.log("Enter");
+            cursor.setAttribute("visible", "true");
+            controlbar.setAttribute("visible", "true");
+          });
+          el.addEventListener("mouseleave", function() {
+            console.log("Leave");
+
+            cursor.setAttribute("visible", "false");
+            controlbar.setAttribute("visible", "false");
+          });
+        }
+      });
+    </script>
+    <!-- <div id="preloader-modal" class="modal instructions-modal" tabindex="-1" role="dialog" style="display: none;">
+        <div class="loadingWrapper">
+                <div class="center" id="center">
+                    <div class="loader blur" id="blur">
+                      <div class="circle circle-1"></div>
+                      <div class="circle circle-2"></div>
+                    </div>
+                  </div>
+                  </div>
+      </div> -->
+    <!-- LOADING SCREEN -->
+    <!-- <div id="splash">
+      <div class="loading"></div>
+    </div> -->
+
+    <!-- Specify our scene. -->
+
+    <!-- <a-plane loading-screen>
+        <div class="loadingWrapper">
+          <div class="center" id="center">
+              <div class="loader blur" id="blur">
+                <div class="circle circle-1"></div>
+                <div class="circle circle-2"></div>
+              </div>
+            </div>
+            </div>
+        </a-plane> -->
+
+    <a-scene
+      loading-screen="dotsColor: white; backgroundColor: black"
+      z-index:9999999999999999999999999999;
+    >
+      <a-entity position="0 2.2 4">
+        <a-entity camera look-controls wasd-controls mouse-cursor>
+          <a-entity
+            position="0 0 -3"
+            geometry="primitive: ring; radiusOuter: 0.30;
+                      radiusInner: 0.20;"
+            material="color: cyan; shader: flat"
+            cursor="maxDistance: 30; fuse: true; fuseTimeout: 2000"
+            scale="1 1 1"
+            visible="false"
+            id="cursorToggle"
+            proxy-event__enter="event: mouseenter; to: a-plane; as: foo"
+            proxy-event__leave="event: mouseleave; to: a-plane; as: bar"
+            animation__enter="enabled: true; property: scale; from: 1 1 1; to:
+            0.1 0.1 0.1; dur:2000; easing: easeInQuad; startEvents: mouseenter"
+            animation__click="enabled: true; property: scale; from: 1 1 1; to:
+            0.1 0.1 0.1; dur:150; easing: easeInQuad; startEvents: click"
+          >
+          </a-entity>
+        </a-entity>
+      </a-entity>
+      <a-assets id="assets">
+        <video
+          id="video"
+          class="video-js vjs-default-skin"
+          autoplay
+          preload="auto"
+          crossOrigin="anonymous"
+          width="100%"
+          height="100%"
+          controls
+          playsinline
+          webkit-playsinline
+          data-dashjs-player
+        >
+          <!-- <source
+        src="http://nomadsstagmediaservices-caea.streaming.media.azure.net/9a3c85a7-36f3-4631-9d31-9964fb588aee/Finale_Teaser_v007_VolBot_b_03_2.ism/manifest(format=m3u8-aapl-v3)"
+        type="application/x-mpegURL">
+      <source
+        src="http://nomadsstagmediaservices-caea.streaming.media.azure.net/9a3c85a7-36f3-4631-9d31-9964fb588aee/Finale_Teaser_v007_VolBot_b_03_2.ism/manifest(format=m3u8-aapl-v3)"
+        type="application/x-mpegURL">
+      <source
+        src="http://nomadsstagmediaservices-caea.streaming.media.azure.net/9a3c85a7-36f3-4631-9d31-9964fb588aee/Finale_Teaser_v007_VolBot_b_03_2.ism/manifest(format=mpd-time-csf)"
+        type="application/dash+xml"> -->
+        </video>
+        <!-- <script>
+          $(document).ready(function() {
+            function getCookie(name) {
+              // Split cookie string and get all individual name=value pairs in an array
+              var cookieArr = document.cookie.split(";");
+
+              // Loop through the array elements
+              for (var i = 0; i < cookieArr.length; i++) {
+                var cookiePair = cookieArr[i].split("=");
+
+                /* Removing whitespace at the beginning of the cookie name
+            and compare it with the given string */
+                if (name == cookiePair[0].trim()) {
+                  // Decode the cookie value and return
+                  return decodeURIComponent(cookiePair[1]);
+                }
+              }
+
+              // Return null if not found
+              return null;
+            }
+            const userLogged = getCookie("username");
+            if (!userLogged) {
+              window.location.replace("https://bsafe.life/");
+              //window.location.href = "http://localhost/login.html";
+              //$(location).attr('href', 'http://localhost/login.html');
+            }
+          });
+        </script>
+        <script>
+          function addToAssets() {
+            let assetsTag = document.getElementById("assets");
+            console.log("assetsTag", assetsTag);
+            // let videoTag=document.createElement('video')
+            // videoTag.setAttribute('id','video')
+            // videoTag.setAttribute('class',"video-js vjs-default-skin")
+            // videoTag.setAttribute('preload','auto')
+            // videoTag.setAttribute('crossOrigin','anonymous')
+            // videoTag.setAttribute('playsinline',true)
+            // videoTag.setAttribute('controls',true)
+            // videoTag.setAttribute('height','100%')
+            // videoTag.setAttribute('width','100%')
+            // videoTag.setAttribute('webkit-playsinline',true)
+            // videoTag.setAttribute('data-dashjs-player',true)
+            // console.log('videoTag', videoTag)
+
+            //this would need to be changed to fetch from nomads server
+            let videoIdUrl=window.location.pathname
+            console.log('videoIdUrl', videoIdUrl)
+            fetch("http://172.18.10.186:5000/api/videos/videosources/", {
+              method: "POST",
+              body: JSON.stringify({ videoLibraryId: 3 }),
+
+              mode: "cors",
+
+              headers: {
+                "Content-Type": "application/json"
+              }
+            })
+              .then(resp => {
+                return resp.json();
+              })
+              .then(response => {
+                console.log("response", response.sources);
+
+                //will be dash video
+                let source0 = {};
+
+                //will be hls video
+                let source1 = {};
+
+                response.sources.map(source => {
+                  if (source.type === "application/dash+xml") {
+                    source0.src = source.src;
+                    source0.type = source.type;
+                  }
+                  if (source.type === "application/x-mpegURL") {
+                    source1.src = source.src;
+                    source1.type = source.type;
+                  }
+                });
+                console.log("source0", source0);
+                console.log("source1", source1);
+
+                let videoTag = document.getElementById("video");
+
+                let sourceTag1 = document.createElement("source");
+                sourceTag1.setAttribute("src", source0.src);
+                sourceTag1.setAttribute("type", source0.type);
+
+                let sourceTag2 = document.createElement("source");
+                sourceTag2.setAttribute("src", source1.src);
+                sourceTag2.setAttribute("type", source1.type);
+
+                videoTag.appendChild(sourceTag1);
+                videoTag.appendChild(sourceTag2);
+
+                //for playing hls
+                if (Hls.isSupported()) {
+                  var hls = new Hls();
+                  hls.loadSource(source1.src);
+                  hls.attachMedia(videoTag);
+                  hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                    video.play();
+                  });
+                } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+                  video.src = source1.src;
+                  video.addEventListener("loadedmetadata", function() {
+                    video.play();
+                  });
+                } else {
+                  //for playing dash
+                  player = dashjs.MediaPlayer().create();
+                  player.initialize(videoTag, source0.src, true);
+
+                  assetsTag.appendChild(videoTag);
+                  console.log("assetsTag", assetsTag);
+                }
+              });
+          }
+
+          addToAssets();
+        </script> -->
+
+        <script type="text/javascript">
+          fetch("http://172.18.10.186:5000/api/videos/videosources/", {
+            method: "POST",
+            body: JSON.stringify({ videoLibraryId: 3 }),
+
+            mode: "cors",
+
+            headers: {
+              "Content-Type": "application/json"
+            }
+          })
+            .then(resp => {
+              return resp.json();
+            })
+            .then(response => {
+              console.log("response", response.sources);
+
+              //will be dash video
+              let source0 = {};
+
+              //will be hls video
+              let source1 = {};
+
+              response.sources.map(source => {
+                if (source.type === "application/dash+xml") {
+                  source0.src = source.src;
+                  source0.type = source.type;
+                }
+                if (source.type === "application/x-mpegURL") {
+                  source1.src = source.src;
+                  source1.type = source.type;
+                }
+              });
+              console.log("source0", source0);
+              console.log("source1", source1);
+
+              var config = {
+                key: "469d5ebc-2796-4df5-bae2-64bbd3936ccd"
+              };
+              var configWithAnalytics = Object.assign({}, config, {
+                analytics: {
+                  key: "6e67d96f-d27d-4926-9807-0b9b3f8ac17e",
+                  videoId: "Getting Started Player"
+                }
+              });
+              var source = {
+                title: "Art of Motion",
+                description: "What is this event... Parcour?",
+                dash:
+                  "http://nomadsstagmediaservices-caea.streaming.media.azure.net/9a3c85a7-36f3-4631-9d31-9964fb588aee/Finale_Teaser_v007_VolBot_b_03_2.ism/manifest(format=mpd-time-csf)",
+                hls:
+                  "http://nomadsstagmediaservices-caea.streaming.media.azure.net/9a3c85a7-36f3-4631-9d31-9964fb588aee/Finale_Teaser_v007_VolBot_b_03_2.ism/manifest(format=m3u8-aapl-v3)",
+                progressive: "//bitmovin-a.akamaihressive: ", //bitmovin-a.akamaihd.net/content/MI201109210084_1/MI201109210084_mpeg-4_hd_high_1080p25_10mbits.mp4'
+                vr: {
+                  startPosition: 180,
+                  contentType: "single",
+                  initialRotation: "true",
+                  initialRotateRate: 0.07
+                }
+              };
+              config.source = source;
+
+              var container = document.getElementById("assets");
+              console.log("container", container);
+
+              let player = bitmovin.player("assets");
+
+              let ambisonics = new bitmovin.player.vr.Ambisonics(player, {
+                yawOffset: Math.PI
+              });
+
+              player.setup(config).then(
+                function(player) {
+                  // Update the VR viewport direction 30 times a second (instead of the default 4 times)
+                  player.vr.setViewingDirectionChangeEventInterval(1 / 30);
+                  // Update the VR viewport direction when the direction changes more than 1 degree (instead of the default 5 degree)
+                  player.vr.setViewingDirectionChangeThreshold(1);
+                  console.log("player loaded");
+                },
+                function(reason) {
+                  console.error("player setup failed", reason);
+                }
+              );
+            });
+        </script>
+      </a-assets>
+      <!-- <a-assets id='assets'>
+  
+
+</a-assets> -->
+      <a-entity
+        id="controls"
+        visible="false"
+        video-controls="src:#bitmovinplayer-video-assets; distance: 3; size:4;"
+        controls-appear
+      >
+      </a-entity>
+
+      <!-- <a-entity laser-controls raycaster="objects: .links; far: 5" mouse-cursor></a-entity> -->
+      <a-entity oculus-touch-controls="hand: left"></a-entity>
+      <a-entity oculus-touch-controls="hand: right"></a-entity>
+      <a-entity
+        camera
+        look-controls
+        orbit-controls="target: 0 1.6 -0.5; minDistance: 0.5; maxDistance: 180; initialPosition: 0 5 15"
+      >
+        <a-entity
+          geometry="primitive:cone; radius-bottom:1; radius-top:0"
+          scale="0 0 0"
+          position="0 0 0"
+          rotation="90 0 0"
+          material="color: #0099ff; transparent: true; opacity:0.5"
+        ></a-entity>
+      </a-entity>
+      <a-entity
+        reverse-look-controls
+        id="target"
+        camera
+        look-controls
+        orbit-controls="target: 0 1.6 -0.5; minDistance: 0.5; maxDistance: 180; initialPosition: 0 5 1"
+      >
+        <a-sphere scale="0 0 0">
+          <!-- <a-animation attribute="position" to="-10 2.2 -5" direction="alternate" dur="2000"
+      repeat="indefinite"></a-animation> -->
+        </a-sphere>
+      </a-entity>
+
+      <a-sky
+        id="loadingTest"
+        src="#bitmovinplayer-video-assets"
+        position="0 0 0"
+        rotation="0 270 0"
+      >
+      </a-sky>
+      <a-plane transparent="true" material="opacity:0" id="mobileDisplay">
+        <div id="mobile-button" class="play-ios">
+          <button onclick="toggleVideo()">Play</button>
+        </div>
+      </a-plane>
+    </a-scene>
+
+    <!-- Show a button to switch to the multi-source example that shows detail. -->
+    <button
+      onClick="window.location.href='multi-source-detail.html'"
+      style="display:none"
+    >
+      Switch to multi-source detail example
+    </button>
+    <script>
+      if ("SamsungChangeSky" in window) {
+        window.SamsungChangeSky({ sphere: "samples/milford-sound.jpg" });
+      }
+    </script>
+    <script src="js/AVideoPlayer.js"></script>
+    <script type="text/javascript">
+      let scene = document.querySelector("a-scene");
+      let vid = document.getElementById("video");
+      vid.addEventListener("ended", () => {
+        scene.exitVR();
+        window.location.href = "https://bself.life";
+      });
+      let button = document.querySelector("a-plane");
+
+      //  cursor.removeAttribute('animation__cursorHideLeave');
+      //       cursor.setAttribute('animation__cursorHideEnter', "property: scale; from: 0.6 0.6 0.6; to: 0 0 0; dur: 300; easing: easeInQuad;");
+      //     }
+      //     let showCursor = function() {
+      //       cursor.removeAttribute('animation__cursorHideEnter');
+      //       cursor.setAttribute('animation__cursorHideLeave', "property: scale; from: 0 0 0; to: 0.6 0.6 0.6; dur: 300; easing: easeInQuad;");
+      //     }
+      //     document.querySelector('#video-screen').addEventListener('mouseenter', hideCursor);
+      //     document.querySelector('#video-screen').addEventListener('mouseleave', showCursor);
+
+      //   var buttonEl = document.querySelector('a-plane');
+
+      // function animateButton(visibility, opacity, duration, elasticity) {
+      //   anime.remove(buttonEl);
+      //   anime({
+      //     targets: buttonEl,
+      //     scale: scale,
+      //     duration: duration,
+      //     elasticity: elasticity
+      //   });
+      // }
+
+      // function enterButton() { animateButton(1.2, 800, 400) };
+      // function leaveButton() { animateButton(1.0, 600, 300) };
+
+      // buttonEl.addEventListener('mouseenter', enterButton, false);
+      // buttonEl.addEventListener('mouseleave', leaveButton, false);
+
+      // let scene = document.querySelector('a-scene');
+      //       var cursor = document.querySelector('a-cursor');
+
+      // let hideCursor = function() {
+      //         cursor.removeAttribute('animation__cursorHideLeave');
+      //         cursor.setAttribute('animation__cursorHideEnter', "property: scale; from: 0.6 0.6 0.6; to: 0 0 0; dur: 300; easing: easeInQuad;");
+      //       }
+      //       let showCursor = function() {
+      //         cursor.removeAttribute('animation__cursorHideEnter');
+      //         cursor.setAttribute('animation__cursorHideLeave', "property: scale; from: 0 0 0; to: 0.6 0.6 0.6; dur: 300; easing: easeInQuad;");
+      //       }
+      //       document.querySelector('#video').addEventListener('mouseenter', hideCursor);
+      //       document.querySelector('#video').addEventListener('mouseleave', showCursor);
+
+      var isMobile = {
+        Android: function() {
+          return navigator.userAgent.match(/Android/i);
+        },
+        BlackBerry: function() {
+          return navigator.userAgent.match(/BlackBerry/i);
+        },
+        iOS: function() {
+          return navigator.userAgent.match(/iPhone|iPad|iPod/i);
+        },
+        Opera: function() {
+          return navigator.userAgent.match(/Opera Mini/i);
+        },
+        Windows: function() {
+          return navigator.userAgent.match(/IEMobile/i);
+        },
+        any: function() {
+          return (
+            isMobile.Android() ||
+            isMobile.BlackBerry() ||
+            isMobile.iOS() ||
+            isMobile.Opera() ||
+            isMobile.Windows()
+          );
+        }
+      };
+      /* if the device is not ios hide the download button */
+
+      if (isMobile.iOS()) {
+        var root = document.documentElement;
+        root.className += " mobileIOS";
+        var mobile = (document.getElementById(
+          "mobile-button"
+        ).style.visibility = "visible");
+      }
+      function toggleVideo() {
+        var myVideo = document.getElementsByTagName("video")[0];
+        // console.log()
+        if (myVideo.pause) myVideo.play();
+        else myVideo.pause();
+      }
+      var circle = anime({
+        targets: [".loader"],
+        rotate: 180,
+        duration: 1600,
+        loop: true,
+        elasticity: 600,
+        easing: "easeOutElastic",
+        delay: function(el, index) {
+          return index * 80;
+        }
+      });
+      document.addEventListener("DOMContentLoaded", function() {
+        console.log("hello");
+        console.log(
+          "Yay! The readyState just increased to  " +
+            "HAVE_CURRENT_DATA or greater for the first time."
+        );
+
+        // var scene = document.querySelector('a-scene');
+        var blur = document.getElementById("mobileDisplay");
+        var activeMobile = document.getElementById("mobile-button");
+        scene.addEventListener("loaded", function(e) {
+          blur.style.transparent = "false";
+          blur.style.opacity = "1";
+          blur.style.transform = "rotate(0deg)";
+          activeMobile.style.display = "flex";
+          activeMobile.style.opacity = "1";
+        });
+      });
+      document.getElementById("mobile-button").onclick = function() {
+        document.getElementById("mobile-button").style.display = "none";
+      };
+      // var player = videojs('#video');
+      // const video = document.querySelector('video');
+
+      // video.onloadeddata = (event) => {
+      //   console.log('Yay! The readyState just increased to  ' +
+      //       'HAVE_CURRENT_DATA or greater for the first time.');
+
+      //       var scene = document.querySelector('a-scene');
+      //     var splash = document.querySelector('#center');
+      //     var blur = document.getElementById("blur");
+      //     var activeMobile = document.getElementById("mobile-button");
+      //     var changeLoader = document.getElementsByClassName('a-canvas');
+      //     scene.addEventListener('loaded', function (e) {
+      //         splash.style.display = 'none';
+      //         blur.style.display ='none';
+      //         blur.style.transform ='rotate(0deg)';
+      //         activeMobile.style.display ="flex";
+      //         changeLoader.style.backgroundColor="black !important";
+      //       });
+      //       document.getElementById('mobile-button').onclick = function() {document.getElementById('mobile-button').style.display = 'none';};
+      // };
+    </script>
+  </body>
+</html>

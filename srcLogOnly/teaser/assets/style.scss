@@ -1,0 +1,75 @@
+#video-permission {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: white;
+    z-index: 10000;
+    display: none;
+  }
+  #video-permission-button {
+    position: fixed;
+    top: calc(50% - 1em);
+    left: calc(50% - 60px);
+    width: 120px;
+    height: 2em;
+  }
+  html {
+    height: 100%;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+  body {
+    height: 100%;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+  }
+  object {
+    height: 100%;
+    width: 100%
+  }
+  #video {
+    width: 100%;
+    height: 100%
+  }
+  .video-wrapper {
+    display: block !important;
+  }
+
+  #playPlane,
+  #backPlane {
+    padding:20vw;
+    transition: 7s ease all;
+    will-change: opacity;
+    opacity:0;
+
+  }
+
+  #playPlane:hover,
+  #backPlane:hover {
+    transition:8s ease;
+    visibility:visible;
+    opacity:1;
+  }
+
+  .transition {
+    transition: visibility 0s linear 300ms, opacity 300ms !important;
+  }
+
+  .planeWrapper {
+    padding:5vw;
+    background: transparent;
+    visibility:hidden;
+    opacity:0;
+    &:hover,
+    &:focus {
+      visibility: visible;
+      opacity:1;
+      
+    }
+
+  }

@@ -1,0 +1,76 @@
+#no-support {
+    position: absolute;
+top: 0;
+bottom: 0;
+right: 0;
+left: 0;
+background-color: white;
+display: flex;
+flex-direction: column;
+font-family: helvetica;
+padding: 4vw;
+  }
+
+  .overlay-inner {
+    height: 100%;
+width: 100%;
+/* background-color: white; */
+
+display: flex;
+flex-direction: column;
+  }
+
+  h1 {
+    font-family: "helvetica";
+    font-weight: lighter;
+line-height: 1.5;
+  }
+
+  .step {
+    display: flex;
+align-items: center;
+font-family: "helvetica";
+letter-spacing: 0.1em;
+font-size: 13px;
+/* flex-wrap:wrap; */
+  }
+
+  .step h1 {
+    margin-right: 10px;
+font-size: 13px;
+font-weight:bold;
+  }
+
+  .step span {
+    width: 10vw;
+padding: 3vw;
+  }
+
+  img {
+    width: 100%;
+  }
+
+#frenchDropdown {
+  background-color: white;
+z-index: 9999999999999;
+position: absolute;
+top: 0;
+bottom: 0;
+right: 0;
+left: 0;
+height: 100%;
+/* width: 100%; */
+padding: 4vw
+}
+
+#exitOverlay,
+#exitOverlayFrench {
+  font-size: 37px;
+position: absolute;
+right: 4vw;
+top: 5px;
+}
+
+#english-nav {
+font-family: "helvetica";
+}
