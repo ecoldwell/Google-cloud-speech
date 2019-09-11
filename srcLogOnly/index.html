@@ -392,11 +392,11 @@
     <script src="/socket.io/socket.io.js"></script>
 <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
  
-     <script src="http://172.18.90.169:5001/socket.io/socket.io.js"></script>
+     
 
   <script>
 $(function () {
-           var socket = io.connect("http://172.18.90.169:5001");
+           var socket = io.connect("http://172.18.90.169:5000");
                        // use your socket
             socket.on("welcome", (message) => {
                 // do something with the message.

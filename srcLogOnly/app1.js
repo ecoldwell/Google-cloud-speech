@@ -1,4 +1,4 @@
-'use strict'
+
 
 //  Google Cloud Speech Playground with node.js and socket.io
 //  Created by Vinzenz Aubry for sansho 24.01.17
@@ -6,6 +6,7 @@
 //	Contact: vinzenz@sansho.studio
 
 const express = require('express'); // const bodyParser = require('body-parser'); // const path = require('path');
+const cors = require('cors');
 const fs = require('fs');
 const environmentVars = require('dotenv').config();
 
@@ -15,25 +16,47 @@ const speechClient = new speech.SpeechClient(); // Creates a client
 
 
 const app = express();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 1337;
 const server = require('http').createServer(app);
 
 const io = require('socket.io')(server);
 
-app.use('/assets', express.static(__dirname + '/public'));
-app.use('/session/assets', express.static(__dirname + '/public'));
-app.set('view engine', 'ejs');
+app.use(cors())
+
+app.use(function (req, res, next) {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  next();
+});
+// app.use('/assets', express.static(__dirname + '/public'));
+// app.use('/session/assets', express.static(__dirname + '/public'));
+
+
+
 
 
 // =========================== ROUTERS ================================ //
+
 
 app.get('/', function (req, res) {
     // res.render('testKonrad.html', {});
 });
 
 app.use('/', function (req, res, next) {
-    next(); // console.log(`Request Url: ${req.url}`);
+   console.log(`Request Url: ${req.url}`);
 });
+// app.use(cors())
+
+// app.use(function (req, res, next) {
+//     res.header('Access-Control-Allow-Origin', '*');
+//     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+//     next();
+// });
+
+// app.get('/', function(req, res){
+//     res.sendFile(__dirname + '/teaser/testKonrad.html');
+  
+//   });
 
 
 // =========================== SOCKET.IO ================================ //
@@ -120,8 +143,8 @@ const request = {
 
 // =========================== START SERVER ================================ //
 
-server.listen(port, "172.18.90.169", function () { 
-    // app.address = "127.0.0.1";
+server.listen(port, "localhost", function () { 
+    // app.address = "localhost";
     console.log('Server started on port:' + port)
 });
 
