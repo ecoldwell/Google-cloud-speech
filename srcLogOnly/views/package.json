@@ -27,7 +27,7 @@
     "browserify": "^16.5.0",
     "file-saver": "^2.0.2",
     "http-browserify": "^1.7.0",
-    "node-sass": "^4.11.0",
+    "node-sass": "^7.0.0",
     "sass": "^1.17.3",
     "shaka": "^3.0.1",
     "shaka-player": "^2.5.0-beta3",
